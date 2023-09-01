@@ -1,0 +1,187 @@
+@charset = UTF-8
+@submodel.name = CreateCubeOfProbabilityMaps
+@submodel.description = "Stack various probabilities maps into a map cube renaming each one according to the transitions present in the transition matrix. Probability maps must be ordered using a prefix like 1_ , e.g 1_filename.tif according to the number of the row of the respective transition.
+
+The map cube is used as input for both patcher and expander operators"
+@submodel.group = Map Algebra
+@submodel.import = ListFilenames { { \"folder\" : Folder, \"filePattern\" : String } { \"searchSubFoldersRecursively\" : BooleanValue } { \"files\" : Table } }; ExpandTableToUniqueKeys { { \"constant\" : Table } { } { \"table\" : Table } }
+@date = 2023-Jul-20 18:14:37
+@version = 7.2.0.20221230
+@submodel.largeicon = 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
+@submodel.smallicon = iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVElEQVR42pWT20tUURTGt0Lv89JDb0FQBN10kkYd06H+gHrxMSIJih4qeqh/IISa+60GiqLUQEVGbYyidHScUcicC2qjqaOVUk5hSoWX6tfeZ0Y9Q7244NvrrMW3vrX25QhAWLzRaIWzn2MOCfsGIhJ9mDT06tBHpTOCrFlUtUItqji7Bh9WYVb62RWJHzAvsfAzh2zef5b4KnlKZFNAdVxYhwcPBRN1O2gI7YF3Hs6/+cXplhQXhle5GF+jtjXJuaEVFmUDNUmBwJL8CHTI0LCXWy8NMONnLtNNbXCcKyNgtoY52znKpeQ6slfhBJVyC8oOuidovyFwdhTR22visC3ByOBjqpxRyRTGGlc/dV1pzI4+LJ7oloDFG6PKHdNI5f5Jmp4ITJ60Fld7BjUvcmY84c3xTvoHtgRUoCfV+JIFsVrMbo0j9PlNgY2kxZssIFV7E1pcah+CP68psWnTCLPcivJ6AWFypKhvFlS6prREuXOcULCYQ9ZJvsQ9ZFMtfHrbxb567fCo0B9iuSOmJd0RQUNCYLTPEXpfxPO0hUex3Yx8OwXLKT6mnjK2OK9xy2y6ayyzaSfK7bDg3rDA3VLKs/ZXcoIeAo3XCS/th+89ZBIhyZrWuEarTuBoXuCyfEj2+2cI+JpwtZnxde/iTsCJv/EaA/GrZJJdTI+++J9A7h342ktoDvq42WygIV1MW8ZAILyTts67TI21MhMPwu/JfwVM9pzAdkz9bJsCx+09s0pETWJUsCpE814hQqnsqKA6q+JqV2RZf40H8ne/HRxRtX8Bv56BAo7ZxrsAAAAASUVORK5CYII=
+Script {{
+    // Folder containing files of probability maps, they must be ordered according to 
+    // the number of rows of the transition matrix using as a prefix a number, e.g. 
+    // 1_name.tif. Each map will be a layer in the cube raster set 
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.description = Folder containing files of probability maps, they must be ordered according to the number of rows of the transition matrix using as a prefix a number, e.g. 1_name.tif. Each map will be a layer in the cube raster set
+    @submodel.in.constant.name = inputFolder
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 2
+    inputFolder := Folder "..";
+
+    listFilenames1820 := ListFilenames {
+        folder = inputFolder,
+        filePattern = $"(*.tif)",
+        searchSubFoldersRecursively = .no
+    };
+
+    getFileNames := GetTableColumn listFilenames1820 2;
+
+    // the transiton matrix 
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.description = the transiton matrix
+    @submodel.in.constant.name = transitionMatrix
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 1
+    transitionMatrix := Table .UNBOUND;
+
+    expandTableToUniqueKeys15358 := ExpandTableToUniqueKeys transitionMatrix;
+
+    @collapsed = no
+    _ := ForEach expandTableToUniqueKeys15358 .none {{
+        step = step;
+
+        row := Step step;
+
+        getTo := GetTableValue {
+            table = expandTableToUniqueKeys15358,
+            keys = row,
+            column = "To",
+            valueIfNotFound = .none
+        };
+
+        getFrom := GetTableValue {
+            table = expandTableToUniqueKeys15358,
+            keys = row,
+            column = "From",
+            valueIfNotFound = .none
+        };
+
+        muxTableLayerNames := MuxTable [
+            "Key*", "layer_sufix#str", 
+        ] setTableCellValue15385;
+
+        createLayerName := CreateString $"(<s3><s1><v1><s1><s2><s1><v2>)" {{
+            NumberString $"(_)" 1;
+
+            NumberString $"(to)" 2;
+
+            NumberString $"(probability)" 3;
+
+            NumberValue getFrom 1;
+
+            NumberValue getTo 2;
+        }};
+
+        setTableCellValue15385 := SetTableCellValue {
+            table = muxTableLayerNames,
+            column = 2,
+            keys = row,
+            value = createLayerName
+        };
+    }};
+
+    getTableValue13738 := GetTableValue {
+        table = getFileNames,
+        keys = [ 1 ],
+        column = 2,
+        valueIfNotFound = .none
+    };
+
+    loadFirstMap := LoadMap {
+        filename = getTableValue13738,
+        nullValue = .none,
+        storageMode = .default,
+        suffixDigits = 0,
+        step = .none,
+        workdir = .none
+    };
+
+    convertToDouble := CalculateMap {
+        expression = [
+            i1
+        ],
+        cellType = .float32,
+        nullValue = .default,
+        resultIsSparse = .no,
+        resultFormat = .none
+    } {{
+        NumberMap loadFirstMap 1;
+    }};
+
+    tableJunction906 := TableJunction setTableCellValue15385 [
+        "Key*", "Value", 
+    ];
+
+    @collapsed = no
+    _ := ForEach (TableJunction setTableCellValue15385 [
+        "Key*", "Value", 
+    ]) .none {{
+        step0 = step;
+
+        layer := Step step0;
+
+        getTableValue92360 := GetTableValue {
+            table = getFileNames,
+            keys = layer,
+            column = 2,
+            valueIfNotFound = .none
+        };
+
+        loadEvidence := LoadMap {
+            filename = getTableValue92360,
+            nullValue = .none,
+            storageMode = .default,
+            suffixDigits = 0,
+            step = step0,
+            workdir = .none
+        };
+
+        muxMap27567 := MuxMap convertToDouble insertMapLayer27563;
+
+        @alias = convert to double
+        convertToDouble0 := CalculateMap {
+            expression = [
+                i1
+            ],
+            cellType = .float32,
+            nullValue = .default,
+            resultIsSparse = .no,
+            resultFormat = .none
+        } {{
+            NumberMap loadEvidence 1;
+        }};
+
+        firstLayer := CalculateValue [
+            if v1 = 1 then
+                1
+            else 
+                0    
+        ] .none {{
+            NumberValue layer 1;
+        }};
+
+        getTableValue9236 := GetTableValue {
+            table = tableJunction906,
+            keys = layer,
+            column = 2,
+            valueIfNotFound = .none
+        };
+
+        insertMapLayer27563 := InsertMapLayer {
+            map = muxMap27567,
+            layer = convertToDouble0,
+            layerPosition = layer,
+            layerName = getTableValue9236,
+            replaceLayer = firstLayer
+        };
+    }};
+
+    // Value or constant representing a map provided as the functor input. 
+    @alias = Object
+    @submodel.out.object.description = Value or constant representing a map provided as the functor input.
+    @submodel.out.object.name = probabilityMapsRasterCube
+    @submodel.out.object.order = 1
+    _ := Map (MapJunction insertMapLayer27563 convertToDouble);
+}};
