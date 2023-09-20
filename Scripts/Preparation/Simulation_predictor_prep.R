@@ -556,8 +556,6 @@ Prep_clim_vars_paths <-lapply(Clim_var_paths, function(x){
   return(layer_path)
 })
 
-#saveRDS(Prep_clim_vars_paths, "E:/LULCC_CH/Data/Preds/Tools/Prep_clim_vars_paths_temp.rds")
-
 ### =========================================================================
 ### D- Prepare a table of info for future predictors to be added to predictor lookup table 
 ### =========================================================================

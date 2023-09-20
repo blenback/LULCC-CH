@@ -339,7 +339,7 @@ writeLines(Model_text, Temp_model_path)
 
 #vector a path for saving the output text of this simulation
 #run which indicates any errors
-output_path <- paste0("Results/Simulation_notifications/calibration_output_", Sys.Date(), ".txt")
+output_path <- paste0(Sim_log_dir,"/calibration_output_", Sys.Date(), ".txt")
 
 print('Starting to run model with Dinamica EGO')
 #Use a system command to run the Dinamica model

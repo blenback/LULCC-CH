@@ -1,0 +1,163 @@
+@charset = UTF-8
+@submodel.title = Calc Similarity Of Differences
+@author = Dinamica Team
+@organization = CSR / UFMG
+@submodel.description = Calculate the minimum fuzzy similarity using maps of changes. This operator calculates the map of differences between a initial map (first one of a time series) and an observed map (last one of a time series) and the differences between a initial map and a simulated map (the simulated one corresponding to the observed map). Then, these maps of differences are used by CalcReciprocalSimilarityMap to derive the minimum similary value.
+@submodel.group = Validation
+@notes = See the help for a detailed description of this method.
+@showproperties = yes
+@date = 2023-Jul-20 18:14:37
+@version = 7.2.0.20221230
+Script {{
+    // Initial map. 
+    @submodel.in.constant.description = Initial Map.
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 0
+    @submodel.in.constant.title = Initial Map
+    initialMap := CategoricalMap .UNBOUND;
+
+    // Simulated map. 
+    @submodel.in.constant.description = Simulated Map.
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 2
+    @submodel.in.constant.title = Simulated Map
+    simulatedMap := CategoricalMap .UNBOUND;
+
+    // Observed (reference) map. 
+    @submodel.in.constant.description = Observed (reference) map.
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 1
+    @submodel.in.constant.title = Observed Map
+    observedMap := CategoricalMap .UNBOUND;
+
+    // Attenuation factor of the exponential decay function. 
+    @submodel.in.constant.advanced = yes
+    @submodel.in.constant.description = Attenuation factor of the exponential decay function.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 6
+    @submodel.in.constant.title = Exponential Decay Divisor
+    exponentialDecayDivisor := RealValue 2;
+
+    // If true, print the value of the mean similarities on the application console. 
+    @alias = print similarities?
+    @submodel.in.constant.description = If true, print the values of the mean similarities on the application console.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 5
+    @submodel.in.constant.title = Print Similarities
+    printSimilarities := BooleanValue .yes;
+
+    // If true, the similarity is calculated using an exponential decay function 
+    // truncated by the window size. Otherwise, a constant function is used within the 
+    // specified window. 
+    @submodel.in.constant.description = If true, the similarity is calculated using an exponential decay function truncated by the window size. Otherwise, a constant function is used within the specified window.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 3
+    @submodel.in.constant.title = Use Exponential Decay
+    useExponentialDecay := BooleanValue .yes;
+
+    //
+    // ===
+    // Calculate map of observed changes. 
+    observedChanges := CalculateCategoricalMap {
+        expression = [
+            if i1 = i2 then
+                null
+            else 
+                i2    
+        ],
+        cellType = .int32,
+        nullValue = .default,
+        resultIsSparse = .no,
+        resultFormat = .none
+    } {{
+        NumberMap initialMap 1;
+
+        NumberMap observedMap 2;
+    }};
+
+    //
+    // ===
+    // Calculate map of simulated changes. 
+    simulatedChanges := CalculateCategoricalMap {
+        expression = [
+            if i1 = i2 then
+                null
+            else 
+                i2    
+        ],
+        cellType = .int32,
+        nullValue = .default,
+        resultIsSparse = .no,
+        resultFormat = .none
+    } {{
+        NumberMap initialMap 1;
+
+        NumberMap simulatedMap 2;
+    }};
+
+    // Only odd numbers are accepted. 
+    @submodel.in.constant.description = Only odd numbers are accepted.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 4
+    @submodel.in.constant.title = Window Size
+    windowSize := PositiveIntegerValue 11;
+
+    LogPolicy .result printSimilarities {{
+        @alias = similarities
+        firstSimilarity firstMean secondSimilarity secondMean := CalcReciprocalSimilarityMap {
+            firstMap = observedChanges,
+            secondMap = simulatedChanges,
+            windowSize = windowSize,
+            useExponentialDecay = useExponentialDecay,
+            cellType = .float32,
+            nullValue = .default,
+            exponentialDecayDivisor = exponentialDecayDivisor
+        };
+    }};
+
+    minimumSimilarity := CalculateValue [
+        min(v1, v2)
+    ] .none {{
+        NumberValue firstMean 1;
+
+        NumberValue secondMean 2;
+    }};
+
+    // Select the minimum similarity map. 
+    @collapsed = yes
+    _ := Group .none {{
+        @alias = is 1st similarity less than 2nd similarity?
+        is1StSimilarityLessThan2NdSimilarity := CalculateValue [
+            v1 < v2
+        ] .none {{
+            NumberValue firstMean 1;
+
+            NumberValue secondMean 2;
+        }};
+
+        _ := IfThen is1StSimilarityLessThan2NdSimilarity .none {{
+            firstSimilarityMap := Map firstSimilarity;
+        }};
+
+        @collapsed = no
+        _ := IfNotThen is1StSimilarityLessThan2NdSimilarity .none {{
+            secondSimilarityMap := Map secondSimilarity;
+        }};
+
+        minimumSimilarityMap := MapJunction firstSimilarityMap secondSimilarityMap;
+    }};
+
+    @alias = similarity
+    @submodel.out.object.description = The minimum similarity index.
+    @submodel.out.object.optional = no
+    @submodel.out.object.order = 1
+    @submodel.out.object.title = Similarity
+    _ := RealValue minimumSimilarity;
+
+    @alias = similarity map
+    @submodel.out.object.description = The minimum similarity map.
+    @submodel.out.object.optional = no
+    @submodel.out.object.order = 0
+    @submodel.out.object.title = Similarity Map
+    _ := Map minimumSimilarityMap;
+}};
