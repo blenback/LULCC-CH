@@ -195,6 +195,7 @@ list2env(Model_tool_vars, .GlobalEnv)
 list2env(Model_tool_vars, scripting_env)
 
 ### =========================================================================
+<<<<<<< HEAD
 ### Download research data
 ### =========================================================================
 
@@ -205,10 +206,19 @@ Zenodo_record_doi <- "10.5281/zenodo.8263509"
 #This can be downloaded using the Zenodo API service.
 
 #Connect to Zenodo API service
+=======
+### Download and unpack data
+### =========================================================================
+
+#download raw predictor data using Zenodo API service to get URLs for file downloads
+
+#connect to Zenodo API
+>>>>>>> 01677fe38d086bd8a3841fb7af8c0148fbeb4daa
 zenodo <- ZenodoManager$new()
 
 #Get record info
 #TO DO: won't work until record is made open access 
+<<<<<<< HEAD
 rec <- zenodo$getRecordByDOI(Zenodo_record_doi)
 files <- rec$listFiles(pretty = TRUE)
 files <- my_rec$listFiles(pretty = TRUE)
@@ -231,6 +241,24 @@ my_rec$downloadFiles(path = tmpdir)
 #the folder there using the standard process for your operating system.
 
 #Option 1: Custom function for unzipping large files using system2 command
+=======
+rec <- zenodo$getRecordByDOI("10.5281/zenodo.7590103")
+files <- rec$listFiles(pretty = TRUE)
+files <- my_rec$listFiles(pretty = TRUE)
+
+#increase timeout limit for downloading file  
+options(timeout=6000)
+
+#create a temporary directory to store the zipped file
+tmpdir <- tempdir()
+
+#Download to tmpdir
+my_rec$downloadFiles(path = tmpdir)
+download.file(files$download, paste0(tmpdir, "/", files$filename), mode = "wb")
+
+#unzip (this can be temperamental may need to manually unzip)
+#function for unzipping large files using system
+>>>>>>> 01677fe38d086bd8a3841fb7af8c0148fbeb4daa
 decompress_file <- function(directory, file, .file_cache = FALSE) {
 
     if (.file_cache == TRUE) {
@@ -264,6 +292,7 @@ decompress_file <- function(directory, file, .file_cache = FALSE) {
     }
 } 
 
+<<<<<<< HEAD
 #Applying custom function
 decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache = FALSE)
 
@@ -280,6 +309,21 @@ file.copy(raw_data_path, "Data/Preds", recursive=TRUE)
 #Moving the spatial reference grid
 raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data/Raw")
 
+=======
+#using function
+decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache = FALSE)
+
+#using r utils::unzip
+unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip")) 
+
+#TO DO: update path when Manuel has finished Zenodo upload.
+#select just the raw data
+raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data/Raw")
+
+#Move files into project structure
+file.copy(raw_data_path, "Data/Preds", recursive=TRUE)
+
+>>>>>>> 01677fe38d086bd8a3841fb7af8c0148fbeb4daa
 #remove the zipped folder in temp dir 
 unlink(paste0(tmpdir, "/", files$filename)) 
 
