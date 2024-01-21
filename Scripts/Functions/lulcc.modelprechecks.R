@@ -415,6 +415,7 @@ if(any(No_duplicate_preds)== TRUE){
                                           duplicate predictors,see result for details",
                                 Result = No_duplicate_preds))}
   
+### REDUNDANT FOLLOWING MOVE TO ON THE FLY RASTER STACKING IN DINAMICA ###
 ### Check 3.###
 #Create list of hypothetical predictor stacks required for the simulations
 # Outer loop over scenario IDs 
@@ -422,37 +423,37 @@ if(any(No_duplicate_preds)== TRUE){
 
 #For calibration stacks, loop over sheet names from viable transitions lists 
 #which equate to the calibration periods
-if(grepl("calibration", Model_mode, ignore.case = TRUE)){
-  Calibration_pred_stacks_exist <- unlist(lapply(Period_names, function(Period_name){
-   File_path <- if(length(list.files("Data/Preds/Prepared/Stacks/Calibration",
-                           full.names = TRUE,
-                           pattern = Period_name)) == 1){TRUE}else{FALSE}}))
-  if(all(Calibration_pred_stacks_exist) == FALSE) {
-        Model_pre_checks <- list.append(Model_pre_checks,
-                           list(Message = "Some of the predictor stacks required
-                           for the calibration periods do not exist,
-                           see result for details",
-                                Result = Calibration_pred_stacks_exist))}
-}
-
-
-#For simulation stacks, again all time point <2020 use the stacks from the calibration
-#periods so use the same subset as above
-if(grepl("simulation", Model_mode, ignore.case = TRUE)){
-Simulation_pred_stacks_exist <- sapply(Scenario_IDs, function(Scenario_ID){
-  
-  #inner loop over time steps
-  Time_step_paths <- sapply(Time_steps_subset, function(Time_step){
-  paste0("Data/Preds/Prepared/Stacks/Simulation/SA_preds/SA_pred_", Scenario_ID, "_", Time_step, ".rds")})
-  
-  Paths_exist <- sapply(Time_step_paths, function(x) file.exists(x))
-  }) 
-if(all(Simulation_pred_stacks_exist) == FALSE) {
-        Model_pre_checks <- list.append(Model_pre_checks,
-                           list(Message = "Some of the predictor stacks required
-                           for simulation time steps do not exist,
-                           see result for details",
-                                Result = Simulation_pred_stacks_exist))}
+# if(grepl("calibration", Model_mode, ignore.case = TRUE)){
+#   Calibration_pred_stacks_exist <- unlist(lapply(Period_names, function(Period_name){
+#    File_path <- if(length(list.files("Data/Preds/Prepared/Stacks/Calibration",
+#                            full.names = TRUE,
+#                            pattern = Period_name)) == 1){TRUE}else{FALSE}}))
+#   if(all(Calibration_pred_stacks_exist) == FALSE) {
+#         Model_pre_checks <- list.append(Model_pre_checks,
+#                            list(Message = "Some of the predictor stacks required
+#                            for the calibration periods do not exist,
+#                            see result for details",
+#                                 Result = Calibration_pred_stacks_exist))}
+# }
+# 
+# 
+# #For simulation stacks, again all time point <2020 use the stacks from the calibration
+# #periods so use the same subset as above
+# if(grepl("simulation", Model_mode, ignore.case = TRUE)){
+# Simulation_pred_stacks_exist <- sapply(Scenario_IDs, function(Scenario_ID){
+#   
+#   #inner loop over time steps
+#   Time_step_paths <- sapply(Time_steps_subset, function(Time_step){
+#   paste0("Data/Preds/Prepared/Stacks/Simulation/SA_preds/SA_pred_", Scenario_ID, "_", Time_step, ".rds")})
+#   
+#   Paths_exist <- sapply(Time_step_paths, function(x) file.exists(x))
+#   }) 
+# if(all(Simulation_pred_stacks_exist) == FALSE) {
+#         Model_pre_checks <- list.append(Model_pre_checks,
+#                            list(Message = "Some of the predictor stacks required
+#                            for simulation time steps do not exist,
+#                            see result for details",
+#                                 Result = Simulation_pred_stacks_exist))}
 }
 
 ### =========================================================================
@@ -462,7 +463,7 @@ if(all(Simulation_pred_stacks_exist) == FALSE) {
 if(grepl("simulation", Model_mode, ignore.case = TRUE)){
   
   #load table of scenario interventions
-  Interventions <- openxlsx::read.xlsx(Scenario_specs_path, sheet = "Interventions")
+  Interventions <- read.csv(Spat_ints_path)
 
   #convert Time_step and Target_classes columns back to character vectors
   Interventions$Time_step <- sapply(Interventions$Time_step, function(x) {

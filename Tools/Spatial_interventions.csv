@@ -1,0 +1,17 @@
+﻿Scenario_ID,Intervention_ID,Intervention_type,Time_step,Target_classes,Prob_perturb_threshold,Dynamic_input,Intervention_data
+EI_SOC,Spatial_zoning,Param_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060","Urban, Int_AG, Open_Forest, Grassland, Perm_crops, Alp_Past",-,N,-
+EI_NAT,Spatial_zoning,Param_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060","Urban, Static",-,N,-
+EI_NAT,Urban_densification,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Bulding_zones/BZ_raster.grd
+EI_CUL,Urban_densification,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Bulding_zones/BZ_raster.grd
+EI_SOC,Urban_densification,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Bulding_zones/BZ_raster.grd
+GR_EX,Urban_sprawl,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Bulding_zones/BZ_raster.grd
+EI_NAT,Urban_migration,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+EI_CUL,Urban_migration,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+EI_SOC,Urban_migration,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+EI_NAT,Mountain_development,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+EI_CUL,Rural_migration,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+EI_SOC,Mountain_development,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060",Urban,5,N,Data/Spat_prob_perturb_layers/Municipality_typology/Muni_type_raster.grd
+BAU,Agri_abandonment,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060","Shrubland, Open_Forest, Grassland",5,N,-
+EI_NAT,Agri_abandonment,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060","Shrubland, Open_Forest, Grassland",5,N,-
+EI_SOC,Agri_abandonment,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060","Shrubland, Open_Forest, Grassland",5,N,-
+EI_CUL,Agri_maintenance,Prob_adjust,"2020, 2025, 2030, 2035, 2040, 2045, 2050,2055, 2060","Shrubland, Open_Forest",5,N,-

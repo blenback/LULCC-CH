@@ -140,19 +140,20 @@ Sector_lookup <- Sector_lookup[-1,]
 names(Sector_lookup)[2] <- "Category"
 
 #Alter division column to single values
-Sector_lookup$max_div <- sapply(Sector_lookup$Division, function(x){
+Sector_lookup$max_div <- as.numeric(sapply(Sector_lookup$Division, function(x){
   if(grepl(x, pattern = "-")== TRUE){max_value <- as.numeric(str_split(x, "-")[[1]][2])}else{
     max_value <- x
   }
-})
+}))
 
 #add column with aggregated sector name
 Sector_lookup$Sector <- sapply(Sector_lookup$max_div, function(x){
   Sec_test <- sapply(Sector_divisions, function(y){
-    between(x, y[1], y[2])
+    dplyr::between(x, y[[1]], y[[2]])
   })
   Sec_name <- names(which(Sec_test == TRUE))
 })
+
 
 #get file paths of future data under all scenarios
 Econ_data_paths <- as.list(list.files("Data/Preds/Raw/Socio_economic/Employment/Employment_scenarios", full.names = TRUE))
@@ -181,10 +182,9 @@ names(Econ_data_paths) <- sapply(names(Econ_data_paths), function(x){
 })
 
 #Subset to which econ scenarios are required for our scenarios
-#load scenario specifications table
-Scenario_data_table <- openxlsx::read.xlsx("Tools/Scenario_specifications.xlsx", sheet = "Predictor_data")
-Scenario_corr <- as.list(Scenario_data_table$Econ_scenario)
-names(Scenario_corr) <- Scenario_data_table[,"Scenario_ID"]
+
+#get names of required scenarios from simulation control table
+Scenario_corr <- unique(Simulation_control$Econ_scenario.string)
 
 #load shapefile of labour market regions
 LMR_shp <- sf::st_read("Data/Preds/Raw/CH_geoms/2022_GEOM_TK/03_ANAL/Gesamtfläche_gf/K4_amre_20180101_gf/K4amre_20180101gf_ch2007Poly.shp")  
@@ -198,7 +198,7 @@ LMR_rast <- rasterize(LMR_shp, Ref_grid, field = "rast_ID", fun='last', backgrou
 for(i in 1:length(Scenario_corr)){
   
   #load future dataset
-  Econ_dat <- readxl::read_excel(Econ_data_paths[[Scenario_corr[[i]]]], sheet = "Bassins d'emploi")
+  Econ_dat <- readxl::read_excel(Econ_data_paths[[Scenario_corr[i]]], sheet = "Bassins d'emploi")
   
   #subset to relevant columns
   Econ_dat <- Econ_dat[,c("time", "EmpFTE", "sector", "regionBE")]
@@ -249,7 +249,7 @@ for(i in 1:length(Scenario_corr)){
     #vector file names
     FTE_file_names <- paste0(Prepared_layers_dir, "/Socio_economic/Employment/Avg_chg_FTE_", unique(Sector_dat_wide[,"Agg_sec"]),
                              "_", names(Date_cols), "_",
-                                    names(Scenario_corr)[i],".tif")
+                                    Scenario_corr[i],".tif")
     
     #use subs to match raster values based on ID and repeat across all columns
     Sector_rasts <- subs(LMR_rast, 
@@ -270,7 +270,7 @@ for(i in 1:length(Scenario_corr)){
 } #close loop over scenarios
 
 #list the files match on the scenario names
-Future_FTE_file_paths <- list.files(paste0(Prepared_layers_dir, "/Socio_economic/Employment"), full.names = TRUE, pattern = paste(names(Scenario_corr), collapse = "|"))
+Future_FTE_file_paths <- list.files(paste0(Prepared_layers_dir, "/Socio_economic/Employment"), full.names = TRUE, pattern = paste(Scenario_corr, collapse = "|"))
 
 ### =========================================================================
 ### B- Preparing mechanism of future population projections
@@ -545,13 +545,13 @@ Prep_clim_vars_paths <-lapply(Clim_var_paths, function(x){
   layer_path <-paste0(Prepared_layers_dir, "/Climatic/", file_name)
   
   #load data
-  #Raw_dat <- raster(x)
+  Raw_dat <- raster(x)
 
   #aggregate
-  #Agg_dat <- aggregate(Raw_dat, fact=4, fun=mean)
+  Agg_dat <- aggregate(Raw_dat, fact=4, fun=mean)
   
   #save
-  #writeRaster(Agg_dat, layer_path, overwrite=TRUE)
+  writeRaster(Agg_dat, layer_path, overwrite=TRUE)
   
   return(layer_path)
 })
@@ -567,12 +567,11 @@ Future_pred_paths <- unlist(c(Future_FTE_file_paths, Prep_clim_vars_paths))
 Predictor_table <- read.xlsx(Pred_table_path, sheetName = "2009_2018")
 
 #load the sheet of the scenario table for RCP designations
-Scenario_RCPs <- Scenario_data_table$Climate_RCP
-names(Scenario_RCPs) <- Scenario_data_table[,"Scenario_ID"]
+Scenario_RCPs <- unique(Simulation_control$Climate_scenario.string)
 
 #filtering to static predictors
 Static_preds <- Predictor_table[Predictor_table$Static_or_dynamic == "static",]
-Static_preds$Scenario <- "All"
+Static_preds$Scenario_variant <- "All"
 
 #create DF for capturing info
 Dynamic_preds <- data.frame(matrix(ncol = length(colnames(Static_preds)), nrow=length(Future_pred_paths)))
@@ -586,19 +585,19 @@ Dynamic_preds$CA_category <- "Suitability"
 Dynamic_preds$Prepared <- "Y"
 
 
-Dynamic_preds$Scenario <- sapply(1:nrow(Dynamic_preds), function(i){
+Dynamic_preds$Scenario_variant <- sapply(1:nrow(Dynamic_preds), function(i){
   
   #use if/else statement based on predictor category 
   if(Dynamic_preds[i, "Predictor_category"] == "Climatic"){
     
     #match on the RCP string in the file path and return the scenario name
     #becuase multiple scenarios use the same RCP this will be a vector
-    Scenario_name <-names(Scenario_RCPs)[which(Scenario_RCPs == c(str_match(Dynamic_preds[i,"Prepared_data_path"], paste(c(Scenario_RCPs), collapse = "|"))))]    
+    Scenario_name <- str_match(Dynamic_preds[i,"Prepared_data_path"], paste(c(Scenario_RCPs), collapse = "|"))  
 
     }else if(Dynamic_preds[i, "Predictor_category"] == "Socio_economic"){
     
     #match on the scenario name
-    Scenario_name <- str_match(Dynamic_preds[i,"Prepared_data_path"], paste(c(names(Scenario_RCPs)), collapse = "|"))
+    Scenario_name <- str_match(Dynamic_preds[i,"Prepared_data_path"], paste(c(Scenario_corr), collapse = "|"))
     }
 
   return(Scenario_name)
@@ -699,47 +698,5 @@ writeData(pred_workbook, sheet = paste(i), x = Combined_vars_for_time_steps[[pas
 #save workbook
 openxlsx::saveWorkbook(pred_workbook, Pred_table_path, overwrite = TRUE)
 
-### =========================================================================
-### F- create predictor variable stack for each scenario/time point
-### =========================================================================
-
-#To do: implement a check in the loop to make sure there are no duplicate
-#predictors being included in the stacks
-
-#vector scenario names
-Scenario_names <- Scenario_data_table$Scenario_ID
-
-#upper loop over time steps
-sapply(Time_steps, function(sim_year){
-
-  #load corresponding sheet of predictor table
-  pred_details <- openxlsx::read.xlsx(Pred_table_path, sheet = paste(sim_year))
-  
-  #convert scenario column back to character vectors
-  pred_details$Scenario <- sapply(pred_details$Scenario, function(x) unlist(strsplit(x, ",")))
-  
-  #loop over scenario names  
-  sapply(Scenario_names, function(scenario){
-    
-    #first seperate static variables scenario = "All""
-    preds_static <- pred_details[pred_details$Scenario == "All",] 
-    
-    #then those relevant for the scenario, necessary to do it this way
-    #because some rows contain multiple values for scenario
-    preds_scenario <- pred_details[grep(scenario, pred_details$Scenario),]
-    
-    #bind static and scenario specific preds
-    preds_scenario <- rbind(preds_static, preds_scenario)
-    
-    #use file paths to stack
-    pred_stack <- raster::stack(preds_scenario$Prepared_data_path)
-    
-    #name layers
-    names(pred_stack@layers) <- preds_scenario$Covariate_ID
-  
-    #save
-    saveRDS(pred_stack, file = paste0("Data/Preds/Prepared/Stacks/Simulation/SA_preds/SA_pred_", scenario, "_", sim_year, ".rds"))
-    }) #close loop over scenarios
-}) #close loop over time steps
 
 

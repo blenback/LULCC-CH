@@ -27,8 +27,9 @@ Ref_crs <- crs(Ref_grid)
 Model_tool_vars <- readRDS("Tools/Model_tool_vars.rds")
 list2env(Model_tool_vars, .GlobalEnv)
 
-#load table of scenario interventions
-Interventions <- openxlsx::read.xlsx(Scenario_specs_path, sheet = "Interventions")
+#load table of scenario specific spatial interventions
+#Spat_ints_path <- "E:/LULCC_CH_Ensemble/Tools/Spatial_interventions.csv"
+Interventions <- read.csv(Spat_ints_path)
 
 #convert Time_step and Target_classes columns back to character vectors
 Interventions$Time_step <- sapply(Interventions$Time_step, function(x) {
@@ -1028,20 +1029,6 @@ for(i in 1:length(n_cells)){
 ### =========================================================================
 ### Intervention in allocation params
 ### =========================================================================
-
-#load table of scenario interventions
-Interventions <- openxlsx::read.xlsx(Scenario_specs_path, sheet = "Interventions")
-
-#convert Time_step and Target_classes columns back to character vectors
-Interventions$Time_step <- sapply(Interventions$Time_step, function(x) {
-  x <- str_remove_all(x, " ")
-  rep <- unlist(strsplit(x, ","))
-  },simplify=FALSE)
-  
-Interventions$Target_classes <- sapply(Interventions$Target_classes, function(x) {
-  x <- str_remove_all(x, " ")
-  rep <- unlist(strsplit(x, ","))
-  },simplify=FALSE)
 
 #test to see if spatial zoning 
 if(any(Interventions$Intervention_type == "Param_adjust")){

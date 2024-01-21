@@ -312,7 +312,7 @@ Calibration_control_table$Deterministic_trans.string <- "N"
 readr::write_csv(Calibration_control_table, "Tools/Calibration_control.csv")
 
 ### =========================================================================
-### D- Perform monte-carlo simulation for calibration 
+### D- Perform simulation for calibration 
 ### =========================================================================
 
 #Perform pre-check to make sure that all element required for Dinamica modelling
@@ -384,11 +384,34 @@ system2(command = paste(DC_path),
 #for each simulation
 Calibration_results <- lapply(list.files("Results/Validation", full.names = TRUE, recursive = TRUE, pattern = ".csv"), function(x) read.csv(x, header = FALSE)) 
 names(Calibration_results) <- sapply(list.files("Results/Validation", full.names = FALSE, recursive = TRUE, pattern = ".csv"), function(x) str_split(x, "_")[[1]][2])
+
+#remove thhe list item that has summary in it's name
+Calibration_results <- Calibration_results[!grepl("summary", names(Calibration_results))]
+
+#bind the list of dataframes into a single dataframe
 Calibration_results <- rbindlist(Calibration_results, idcol = "Sim_ID")
+
+#rename the similarity score column
 names(Calibration_results)[2] <- "Similarity_score"
 
+#summary statistics
+Calibration_summary <- data.frame(Mean = mean(Calibration_results$Similarity_score),
+                                  SD = sd(Calibration_results$Similarity_score),
+                                  Min = min(Calibration_results$Similarity_score),
+                                  Max = max(Calibration_results$Similarity_score),
+                                  n = length(Calibration_results$Similarity_score))
+
+#clean column names of summary statistics
+colnames(Calibration_summary) <- c("Mean", "Standard Deviation", "Minimum", "Maximum")
+
+#save summary statistics
+readr::write_csv(Calibration_summary, "Results/Validation/Validation_summary.csv")
+
+#save copy to publication dir
+#readr::write_csv(Calibration_summary, "publication/figures_tables/Validation_summary.csv")
+
 #select best performing simulation_ID
-Best_sim_ID <- Calibration_results$Sim_ID[Calibration_results$Similarity_score == max(Calibration_results$Similarity_score)]
+Best_sim_ID <- Calibration_results[which.max(Calibration_results$Similarity_score),]$Sim_ID
 
 #Use this sim ID to create parameter tables for all simulation time points
 #in the Simulation folder
@@ -396,6 +419,9 @@ Best_sim_ID <- Calibration_results$Sim_ID[Calibration_results$Similarity_score =
 #get exemplar table
 param_table <- read.csv(list.files(paste0(Calibration_param_dir, "/", Best_sim_ID), full.names = TRUE, pattern = "2020"))
 colnames(param_table) <- c("From*","To*"," Mean_Patch_Size","Patch_Size_Variance","Patch_Isometry", "Perc_expander", "Perc_patcher")                   
+
+#save a copy for the publication
+#readr::write_csv(param_table, "publication/figures_tables/Optimal_param_table.csv")
 
 #get simulation start and end times from simulation control table
 Simulation_control <- read.csv(Sim_control_path)

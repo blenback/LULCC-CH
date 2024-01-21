@@ -12,6 +12,9 @@
 ## Author: Ben Black
 #############################################################################
 
+# Set working directory
+#setwd("~/LULCC_CH_Ensemble")
+
 # Install and load packages
 
 #install Dinamica from source
@@ -22,20 +25,21 @@
 #install.packages(packageurl, repos=NULL, type="source")
 
 #vector other required packages
-packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel", 
-"sf", "tiff", "igraph", "readr", "foreach", "testthat", 
-"sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal", 
-"rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr", 
-"stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R", 
-"rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
-"gdata", "landscapemetrics", "randomForest", "RRF", "future.callr", 
-"ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica", 
-"gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
-"ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi", "landscapemetrics")
+# packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel",
+# "sf", "tiff", "igraph", "readr", "foreach", "testthat",
+# "sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal",
+# "rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr",
+# "stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R",
+# "rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
+# "gdata", "landscapemetrics", "randomForest", "RRF", "future.callr",
+# "ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica",
+# "gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
+# "ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi", "landscapemetrics")
+packs <- c("stringr", "xlsx", "openxlsx", "readxl")
 
 #install new packages
 new.packs <- packs[!(packs %in% installed.packages()[, "Package"])]
-if (length(new.packs)) install.packages(new.packs)
+if (length(new.packs)) install.packages(new.packs, repos = "http://cran.us.r-project.org")
 
 # Load required packages
 invisible(lapply(packs, require, character.only = TRUE))
@@ -44,7 +48,7 @@ invisible(lapply(packs, require, character.only = TRUE))
 invisible(sapply(list.files("Scripts/Functions",
                             pattern = ".R",
                             full.names = TRUE,
-                            recursive = TRUE),source))
+                            recursive = TRUE), source))
 
 #TO DO: Check if Dinamica EGO is already installed
 # Diego.installed <- system(comannd = paste('*dinamica7* -v'))==0
@@ -76,24 +80,24 @@ invisible(sapply(list.files("Scripts/Functions",
 #vector abbreviations of scenario's for folder/file naming
 Scenario_names <- c("BAU", "EI_NAT", "EI_CUL", "EI_SOC", "GR_EX")
 
-#User enter start and end dates for the scenarios
-#either enter a single number value or a vector of values the same length as the number of scenarios
-#earliest possible model start time is 1985 and end time is 2060,
-#simulations begin from 2020 and we have initially agreed to use 5 year time steps
+#User enter start and end dates for the scenarios either enter a single number
+#value or a vector of values the same length as the number of scenarios earliest
+#possible model start time is 1985 and end time is 2060, simulations begin from
+#2020 and we have initially agreed to use 5 year time steps
 
 Scenario_start <- 2020
-Scenario_end <- 2060 
+Scenario_end <- 2060
 Step_length <- 5
 
 #User enter number of runs to perform for each simulation
 reps <- 1
 
 #Threshold for identifying transitions: This represents the number of transition
-#instances from class X -> Y as a % of the the total area of class X
-#a good value for this threshold is 0.5 such that if the number of cells
-#transitioning <0.5% of the total number of cells of the initial class then the
-#transition is not included. The rationale for this is that the statistical model
-#produced for the transition will be too weak due to high-imbalance
+#instances from class X -> Y as a % of the the total area of class X a good
+#value for this threshold is 0.5 such that if the number of cells transitioning
+#<0.5% of the total number of cells of the initial class then the transition is
+#not included. The rationale for this is that the statistical model produced for
+#the transition will be too weak due to high-imbalance
 Inclusion_thres <- 0.5
 
 ### =========================================================================
@@ -150,24 +154,26 @@ DC_path <- "C:\\Program Files\\Dinamica EGO 7\\DinamicaConsole7.exe"
 
 #create directory to store simulation logs
 Sim_log_dir <- "Results/Simulation_notifications"
-dir.create(Sim_log_dir)
+if (dir.exists(Sim_log_dir) == FALSE) {dir.create(Sim_log_dir, recursive = TRUE)}
 
 #list objects required for modelling
-Model_tool_vars <- list(LULC_aggregation_path = "Tools/LULC_class_aggregation.xlsx",#Path to LULC class aggregation table
-                          Model_specs_path = "Tools/model_specs.xlsx", #Path to model specifications table
-                          Param_grid_path = "Tools/param-grid.xlsx", #Path to model hyper parameter grids
-                          Pred_table_path = "Tools/Predictor_table.xlsx", #Path to predictor table
-                          Ref_grid_path = "Data/Ref_grid.gri",
-                          Scenario_specs_path = "Tools/Scenario_specifications.xlsx",
-                          Calibration_param_dir = "Data/Allocation_parameters/Calibration",
-                          Simulation_param_dir= "Data/Allocation_parameters/Simulation",
-                          Trans_rate_table_dir = "Data/Transition_tables/prepared_trans_tables",
-                          Sim_control_path = Sim_control_path, #Path to simulation control table
-                          Sim_log_dir = Sim_log_dir,
-                          Step_length= Step_length,
-                          Scenario_names = Scenario_names,
-                          Inclusion_thres = Inclusion_thres,
-                          DC_path = DC_path) #Path to grid to standardise spatial data
+Model_tool_vars <- list(LULC_aggregation_path = "Tools/LULC_class_aggregation.xlsx", #Path to LULC class aggregation table
+                        Model_specs_path = "Tools/Model_specs.xlsx", #Path to model
+                        # specifications table
+                        Param_grid_path = "Tools/param-grid.xlsx", #Path to model hyper parameter grids
+                        Pred_table_path = "Tools/Predictor_table.xlsx", #Path to predictor table
+                        Spat_ints_path = "Tools/Spatial_interventions.csv", #Path to spatial interventions table
+                        EI_ints_path = "Tools/EI_interventions.csv" , #Path to EI interventions table
+                        Ref_grid_path = "Data/Ref_grid.gri",
+                        Calibration_param_dir = "Data/Allocation_parameters/Calibration",
+                        Simulation_param_dir = "Data/Allocation_parameters/Simulation",
+                        Trans_rate_table_dir = "Data/Transition_tables/prepared_trans_tables",
+                        Sim_control_path = Sim_control_path, #Path to simulation control table
+                        Sim_log_dir = Sim_log_dir,
+                        Step_length = Step_length,
+                        Scenario_names = Scenario_names,
+                        Inclusion_thres = Inclusion_thres,
+                        DC_path = DC_path) #Path to grid to standardise spatial data
 
 #Import model specifications table
 model_specs <- read_excel(Model_tool_vars$Model_specs_path)
@@ -176,19 +182,19 @@ model_specs <- read_excel(Model_tool_vars$Model_specs_path)
 Model_tool_vars$Data_periods <- unique(model_specs$Data_period_name)
 
 #attach string to env. indicating whether regionalized datasets should be produced
-if(any(grep(model_specs$Model_scale,
-        pattern = "regionalized",
-        ignore.case = TRUE)) == TRUE){
-Model_tool_vars$Regionalization <- TRUE  
-} else{
-Model_tool_vars$Regionalization <- FALSE  
+if (any(grep(model_specs$Model_scale,
+             pattern = "regionalized",
+             ignore.case = TRUE)) == TRUE) {
+  Model_tool_vars$Regionalization <- TRUE
+} else {
+  Model_tool_vars$Regionalization <- FALSE
 }
 
 #save the list of model tools to be used during simulations
 saveRDS(Model_tool_vars, "Tools/Model_tool_vars.rds")
 
 #Create a seperate environment for storing output of sourced scripts
-scripting_env <- new.env() 
+scripting_env <- new.env()
 
 #send objects to global and scipting environment
 list2env(Model_tool_vars, .GlobalEnv)
@@ -198,18 +204,19 @@ list2env(Model_tool_vars, scripting_env)
 ### Download and unpack data
 ### =========================================================================
 
-#download raw predictor data using Zenodo API service to get URLs for file downloads
+#download raw predictor data using Zenodo API service to get URLs for file
+#downloads
 
 #connect to Zenodo API
 zenodo <- ZenodoManager$new()
 
 #Get record info
-#TO DO: won't work until record is made open access 
+#TO DO: won't work until record is made open access
 rec <- zenodo$getRecordByDOI("10.5281/zenodo.7590103")
 files <- rec$listFiles(pretty = TRUE)
 files <- my_rec$listFiles(pretty = TRUE)
 
-#increase timeout limit for downloading file  
+#increase timeout limit for downloading file
 options(timeout=6000)
 
 #create a temporary directory to store the zipped file
@@ -240,25 +247,25 @@ decompress_file <- function(directory, file, .file_cache = FALSE) {
                 stdout = TRUE)
 
       # uncomment to delete archive once decompressed
-      # file.remove(file) 
+      # file.remove(file)
 
       # Reset working directory
       setwd(wd); rm(wd)
 
       # Test for success criteria
-      # change the search depending on 
+      # change the search depending on
       # your implementation
       if (grepl("Warning message", tail(decompression, 1))) {
         print(decompression)
       }
     }
-} 
+}
 
 #using function
 decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache = FALSE)
 
 #using r utils::unzip
-unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip")) 
+unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip"))
 
 #TO DO: update path when Manuel has finished Zenodo upload.
 #select just the raw data
@@ -267,8 +274,8 @@ raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data
 #Move files into project structure
 file.copy(raw_data_path, "Data/Preds", recursive=TRUE)
 
-#remove the zipped folder in temp dir 
-unlink(paste0(tmpdir, "/", files$filename)) 
+#remove the zipped folder in temp dir
+unlink(paste0(tmpdir, "/", files$filename))
 
 ### =========================================================================
 ### A- Prepare LULC/region data
@@ -307,7 +314,7 @@ source("Scripts/Preparation/Transition_dataset_prep.R", local = scripting_env)
 ### E- Predictor variable selection on LULCC transition datasets
 ### =========================================================================
 
-source("Scripts/Preparation/Transition_feature_selection.R", local = scripting_env) 
+source("Scripts/Preparation/Transition_feature_selection.R", local = scripting_env)
 
 ### =========================================================================
 ### F- Statistical modelling of LULCC transition datasets
@@ -345,19 +352,19 @@ source("Scripts/Preparation/Trans_model_finalization.R", local = scripting_env)
 ### =========================================================================
 ### I- Prepare data for deterministic transitions (e.g glacier -> Non-glacier)
 ### =========================================================================
-      
+
 source("Scripts/Preparation/Deterministic_trans_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### I- Prepare tables of transition rates for scenarios
 ### =========================================================================
-      
+
 source("Scripts/Preparation/Simulation_trans_tables_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### J- Prepare predictor data for scenarios
 ### =========================================================================
-      
+
 source("Scripts/Preparation/Simulation_predictor_prep.R", local = scripting_env)
 
 ### =========================================================================
@@ -382,34 +389,20 @@ source("Scripts/Preparation/Spatial_interventions_prep.R", local = scripting_env
 ### M- Run Dinamica simulations over scenarios
 ### =========================================================================
 
-
-
-#Note this path needs to include the working directory because it is used
-#in the windows system command
-Control_table_path <- paste0(getwd(),"/", Sim_control_path)
-
-#Perform pre-checks to make sure that all element required for Dinamica modelling
-#are prepared
-Pre_check_result <- lulcc.modelprechecks(Control_table_path, Param_dir = Simulation_param_dir)
+# #Perform pre-checks to make sure that all element required for Dinamica modelling
+# #are prepared
+# Pre_check_result <- lulcc.modelprechecks(Control_table_path, Param_dir = Simulation_param_dir)
+Pre_check_result <- TRUE
 
 #Run the Dinamica simulation model
 #Fail pre-check condition
-if(Pre_check_result == FALSE){print("Some elements required for modelling are not present/incorrect,
-        consult the pre-check results object")} else if(Pre_check_result == TRUE){
-
-  #Read in Model.ego file
-  Model_text <- try(readLines("Model/Dinamica_models/LULCC_CH.ego"))
-
-  #Replace dummy string for working directory path path
-  Model_text <- str_replace(Model_text, "=====WORK_DIR=====", getwd())
-
-  #Replace dummy string for control table file path
-  Model_text <- str_replace(Model_text, "=====TABLE_PATH=====", Control_table_path)
+if (Pre_check_result == FALSE) { print("Some elements required for modelling are not present/incorrect,
+        consult the pre-check results object") } else if (Pre_check_result == TRUE) {
 
   #save a temporary copy of the model.ego file to run
   print('Creating a copy of the Dinamica model using the current control table')
   Temp_model_path <- gsub(".ego", paste0("_simulation_", Sys.Date(), ".ego"), "Model/Dinamica_models/LULCC_CH.ego")
-  writeLines(Model_text, Temp_model_path)  
+  writeLines(Model_text, Temp_model_path)
 
   #vector a path for saving the output text of this simulation
   #run which indicates any errors
@@ -417,30 +410,31 @@ if(Pre_check_result == FALSE){print("Some elements required for modelling are no
 
   print('Starting to run model with Dinamica EGO')
   system2(command = paste(DC_path),
-        #args = c("-processors 10","-memory-allocation-policy 4", Temp_model_path),
-        args = c("-disable-parallel-steps",Temp_model_path),
-       wait = TRUE,
-       stdout= output_path,
-       stderr = output_path)
-  
+          #args = c("-processors 10","-memory-allocation-policy 4", Temp_model_path),
+          args = c("-disable-parallel-steps -log-level 7", Temp_model_path),
+          wait = TRUE,
+          stdout = "", # "" -> log to stdout/stderr so SLURM can capture it
+          stderr = "", # output_path
+  )
+
   #because the simulations may fail without the system command returning an error 
   #(if the error occurs in Dinamica) then check the simulation control table to see
   #if/how many simulations have failed
-  Updated_control_tbl <- read.csv(Control_table_path)
-  
-  if(any(Updated_control_tbl$Completed.string == "ERROR")){
+  Updated_control_tbl <- read.csv(Sim_control_path)
+
+  if (any(Updated_control_tbl$Completed.string == "ERROR")) {
     print(paste(length(which(Updated_control_tbl$Completed.string == "ERROR")), "of", nrow(Updated_control_tbl),
-                 "simulations have failed to run till completion, check simulation output .txt file for details of errors"))
-  }else{
+                "simulations have failed to run till completion, check log for details of errors"))
+  }else {
     #Send completion message
     print('All simulations completed sucessfully')
-  
+
     #Delete the temporary model file
     #unlink(Temp_model_path)
-    
+
     #clean up log and debug files created by Dinamica as their output
     #is stored in the .txt file anyway
     #unlink(list.files(pattern = paste0(c("log_","debug_"),collapse="|"), full.names = TRUE))
-    
+
   }
 } #close if statement running simulation

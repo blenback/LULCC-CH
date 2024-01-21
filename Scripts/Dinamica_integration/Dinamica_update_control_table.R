@@ -4,18 +4,8 @@
 ## Author: Ben Black
 #############################################################################
 
+#Load readr package
 library(readr)
-
-#receive file path for control table 
-Control_table_path <- s1
-
-#receive Boolean value of whether simulation was completed successfully
-Success <- s2
-cat(Success)
-
-#receive row number of current simulation
-Simulation_num <- v1
-#Simulation_num <- 1
 
 #load control and subset to simulation number
 Control_table <- read.csv(Control_table_path)

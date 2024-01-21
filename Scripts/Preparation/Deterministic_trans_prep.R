@@ -30,7 +30,7 @@ LULC_years <- gsub(".*?([0-9]+).*", "\\1", list.files("Data/Historic_LULC", full
 
 #Load Model lookup tables for each period and subset to just transition names
 Periodic_trans_names <- lapply(Data_periods, function(Period){
-  full_table <- read.xlsx("Tools/Model_lookup.xlsx", sheetIndex = Period)
+  full_table <- read.xlsx("Tools/Model_lookup.xlsx", sheet = Period)
   trans_names <- unique(full_table[["Trans_name"]])
   })
 names(Periodic_trans_names) <- Data_periods
@@ -46,7 +46,7 @@ All_time_steps <- seq(min(LULC_years), max(Sim_control_table$Scenario_end.real),
 
 #vector simulation time steps 
 #(i.e. only the time steps until the end, omitting the start year)
-Sim_time_steps <- All_time_steps[between(All_time_steps,(min(Sim_control_table$Scenario_start.real)+Step_length), max(Sim_control_table$Scenario_end.real))]
+Sim_time_steps <- All_time_steps[dplyr::between(All_time_steps,(min(Sim_control_table$Scenario_start.real)+Step_length), max(Sim_control_table$Scenario_end.real))]
 
 #vector all simulation years (i.e. including initial year)
 Sim_years <- c(round(as.numeric(max(LULC_years))/Step_length)*Step_length, paste(Sim_time_steps))
@@ -82,8 +82,15 @@ Glacier_indices <- lapply(list.files("Data/Glacial_change/median_scenarios", ful
 #extract RCP designation between other strings
 names(Glacier_indices) <- lapply(list.files("Data/Glacial_change/median_scenarios", full.names = FALSE), function(x) str_match(x, "series_\\s*(.*?)\\s*_median")[,2]) 
 
+#create directory for scenario specific indices
+Glacial_scenario_dir <- "Data/Glacial_change/Scenario_indices"
+dir.create(Glacial_scenario_dir)
+
+#Loop over Glacial_indices saving each as rds. using name of RCP in file name
+lapply(names(Glacier_indices), function(x) saveRDS(Glacier_indices[[x]], paste0(Glacial_scenario_dir, "/", x, "_glacial_change.rds")))
+
 #calculate glacial change area per time step and combine to single DF 
-Glacial_change <- rbindlist(lapply(Glacier_indices, function(x){
+Glacial_change <- data.table::rbindlist(lapply(Glacier_indices, function(x){
   
   #calculate col sums
   Area_per_year <- colSums(x[,2:ncol(x)])
@@ -97,33 +104,7 @@ Glacial_change <- rbindlist(lapply(Glacier_indices, function(x){
   return(Areal_change)
 }), idcol = "RCP")
 
-#save a table of glacial change areas with a row for each scenario matched by RCP
-#and at the same time save a table of the glacial indexs for each scenario
-
-#load scenario specifications
-Scenario_specs <- openxlsx::read.xlsx(Scenario_specs_path, sheet = "Predictor_data")
-
-#create a df to capture results
-Scenario_glacial_change <- data.frame(matrix(nrow = length(Scenario_names), ncol = ncol(Glacial_change)))
-names(Scenario_glacial_change) <- c("Scenario", paste(Sim_time_steps))
-
-#create directory for scenario specific indices
-Glacial_scenario_dir <- "Data/Glacial_change/Scenario_indices"
-dir.create(Glacial_scenario_dir)
-
-#loop over scenario names filling df
-for(i in 1:length(Scenario_names)){
-  Scenario <- Scenario_names[i]
-  Scenario_glacial_change[i,"Scenario"] <- Scenario
-  Scenario_RCP <- Scenario_specs[Scenario_specs$Scenario_ID == Scenario, "Climate_RCP"]
-  Scenario_glacial_change[i,2:ncol(Scenario_glacial_change)] <-  Glacial_change[Glacial_change$RCP == Scenario_RCP,2:ncol(Glacial_change)]
-
-  #seperate glacial change index for scenario
-  Scenario_index <- Glacier_indices[[Scenario_RCP]]
-  
-  #save scenario specific index
-  saveRDS(Scenario_index, paste0(Glacial_scenario_dir, "/", Scenario, "_glacial_change.rds"))
-  }
-
 #save areal change across scenario's table
-write.xlsx(Scenario_glacial_change, "Tools/Glacial_area_change.xlsx", row.names = FALSE)
+write.xlsx(Glacial_change, "Tools/Glacial_area_change.xlsx", row.names = FALSE)
+
+

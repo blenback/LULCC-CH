@@ -6,8 +6,8 @@
 @submodel.group = Validation
 @notes = See the help for a detailed description of this method.
 @showproperties = yes
-@date = 2023-Jul-20 18:14:37
-@version = 7.2.0.20221230
+@date = 2023-Nov-22 15:03:10
+@version = 7.6.0.20231102
 Script {{
     // Initial map. 
     @submodel.in.constant.description = Initial Map.
@@ -30,14 +30,6 @@ Script {{
     @submodel.in.constant.title = Observed Map
     observedMap := CategoricalMap .UNBOUND;
 
-    // Attenuation factor of the exponential decay function. 
-    @submodel.in.constant.advanced = yes
-    @submodel.in.constant.description = Attenuation factor of the exponential decay function.
-    @submodel.in.constant.optional = yes
-    @submodel.in.constant.order = 6
-    @submodel.in.constant.title = Exponential Decay Divisor
-    exponentialDecayDivisor := RealValue 2;
-
     // If true, print the value of the mean similarities on the application console. 
     @alias = print similarities?
     @submodel.in.constant.description = If true, print the values of the mean similarities on the application console.
@@ -45,6 +37,13 @@ Script {{
     @submodel.in.constant.order = 5
     @submodel.in.constant.title = Print Similarities
     printSimilarities := BooleanValue .yes;
+
+    // Only odd numbers are accepted. 
+    @submodel.in.constant.description = Only odd numbers are accepted.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 4
+    @submodel.in.constant.title = Window Size
+    windowSize := PositiveIntegerValue 11;
 
     // If true, the similarity is calculated using an exponential decay function 
     // truncated by the window size. Otherwise, a constant function is used within the 
@@ -95,12 +94,13 @@ Script {{
         NumberMap simulatedMap 2;
     }};
 
-    // Only odd numbers are accepted. 
-    @submodel.in.constant.description = Only odd numbers are accepted.
+    // Attenuation factor of the exponential decay function. 
+    @submodel.in.constant.advanced = yes
+    @submodel.in.constant.description = Attenuation factor of the exponential decay function.
     @submodel.in.constant.optional = yes
-    @submodel.in.constant.order = 4
-    @submodel.in.constant.title = Window Size
-    windowSize := PositiveIntegerValue 11;
+    @submodel.in.constant.order = 6
+    @submodel.in.constant.title = Exponential Decay Divisor
+    exponentialDecayDivisor := RealValue 2;
 
     LogPolicy .result printSimilarities {{
         @alias = similarities
@@ -147,17 +147,17 @@ Script {{
         minimumSimilarityMap := MapJunction firstSimilarityMap secondSimilarityMap;
     }};
 
-    @alias = similarity
-    @submodel.out.object.description = The minimum similarity index.
-    @submodel.out.object.optional = no
-    @submodel.out.object.order = 1
-    @submodel.out.object.title = Similarity
-    _ := RealValue minimumSimilarity;
-
     @alias = similarity map
     @submodel.out.object.description = The minimum similarity map.
     @submodel.out.object.optional = no
     @submodel.out.object.order = 0
     @submodel.out.object.title = Similarity Map
     _ := Map minimumSimilarityMap;
+
+    @alias = similarity
+    @submodel.out.object.description = The minimum similarity index.
+    @submodel.out.object.optional = no
+    @submodel.out.object.order = 1
+    @submodel.out.object.title = Similarity
+    _ := RealValue minimumSimilarity;
 }};
