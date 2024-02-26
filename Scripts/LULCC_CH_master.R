@@ -12,9 +12,6 @@
 ## Author: Ben Black
 #############################################################################
 
-# Set working directory
-#setwd("~/LULCC_CH_Ensemble")
-
 # Install and load packages
 
 #install Dinamica from source

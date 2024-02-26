@@ -5,8 +5,6 @@
 ## Author: Ben Black, Carlson Büth
 #############################################################################
 
-#set working directory
-setwd(wpath)
 
 #load control table 
 Control_table <- read.csv(Control_table_path)

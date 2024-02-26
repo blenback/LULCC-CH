@@ -9,7 +9,7 @@
 ### A- Determine if validation is required
 ### =========================================================================
 
-setwd(wpath)
+# setwd(wpath)
 
 #If model mode is simulation then return '0' as validation is not required
 #else if calibration ,then validation is required so return '1' 

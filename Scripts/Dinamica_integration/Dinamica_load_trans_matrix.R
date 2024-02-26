@@ -9,8 +9,8 @@
 ### A- Preparation
 ### =========================================================================
 
-#wpath <- getwd()
-setwd(wpath)
+# #wpath <- getwd()
+# setwd(wpath)
 
 #Vector packages for loading
 packs<-c("data.table", "raster", "tidyverse","stringr", "readr", "xlsx",

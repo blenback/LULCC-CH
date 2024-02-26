@@ -12,6 +12,7 @@ Scripts/Analysis/Results_analysis.R
 Scripts/Analysis/Simulated_map_finalisation.R
 Scripts/Analysis/Simulated_map_summaries.R
 Scripts/Dinamica_integration/Dinamica_deterministic_trans.R
+Scripts/Dinamica_integration/Dinamica_get_env_vars.R
 Scripts/Dinamica_integration/Dinamica_initialize.R
 Scripts/Dinamica_integration/Dinamica_load_trans_matrix.R
 Scripts/Dinamica_integration/Dinamica_modify_lulc_save_path.R
@@ -86,7 +87,7 @@ Tools/param-grid.xlsx
 Tools/Predict_model_specs.xlsx
 Tools/Predict_param-grid.xlsx
 Tools/Predictor_table.xlsx
-Tools/Scenario_specifications.xlsx
+Tools/Spatial_interventions.csv
 Tools/Simulation_control.csv
 Tools/Transition_Tables.xlsx
 Tools/Viable_transitions_lists.rds

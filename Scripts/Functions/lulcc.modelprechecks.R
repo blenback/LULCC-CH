@@ -454,7 +454,7 @@ if(any(No_duplicate_preds)== TRUE){
 #                            for simulation time steps do not exist,
 #                            see result for details",
 #                                 Result = Simulation_pred_stacks_exist))}
-}
+#}
 
 ### =========================================================================
 ### I- Check functionality of spatial interventions
