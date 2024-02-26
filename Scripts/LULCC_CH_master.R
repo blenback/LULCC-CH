@@ -12,31 +12,23 @@
 ## Author: Ben Black
 #############################################################################
 
-# Install and load packages
+# Package management for this project is handled using the renv package:
+# https://github.com/rstudio/renv
+# Upon open the project renv should have prompted you to install of the required
+# packages from the project library. If not, run the following command:
+# renv::restore()
 
-#install Dinamica from source
-#install.packages("Model/dinamica_1.0.4.tar.gz", repos=NULL, type="source")
-
-#SDMtools is depreciated and needs to be installed from source
-#packageurl <- "https://cran.r-project.org/src/contrib/Archive/SDMTools/SDMTools_1.1-221.2.tar.gz"
-#install.packages(packageurl, repos=NULL, type="source")
-
-#vector other required packages
-# packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel",
-# "sf", "tiff", "igraph", "readr", "foreach", "testthat",
-# "sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal",
-# "rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr",
-# "stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R",
-# "rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
-# "gdata", "landscapemetrics", "randomForest", "RRF", "future.callr",
-# "ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica",
-# "gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
-# "ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi", "landscapemetrics")
-packs <- c("stringr", "xlsx", "openxlsx", "readxl")
-
-#install new packages
-new.packs <- packs[!(packs %in% installed.packages()[, "Package"])]
-if (length(new.packs)) install.packages(new.packs, repos = "http://cran.us.r-project.org")
+# vector required packages
+packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel",
+"sf", "tiff", "igraph", "readr", "foreach", "testthat",
+"sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal",
+"rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr",
+"stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R",
+"rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
+"gdata", "landscapemetrics", "randomForest", "RRF", "future.callr",
+"ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica",
+"gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
+"ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi", "landscapemetrics")
 
 # Load required packages
 invisible(lapply(packs, require, character.only = TRUE))
@@ -47,34 +39,27 @@ invisible(sapply(list.files("Scripts/Functions",
                             full.names = TRUE,
                             recursive = TRUE), source))
 
-#TO DO: Check if Dinamica EGO is already installed
-# Diego.installed <- system(comannd = paste('*dinamica7* -v'))==0
+# TO DO: Check if Dinamica EGO is already installed
+# Diego.installed <- system(command = paste('*dinamica7* -v'))==0
 # executable <- "*Dinamica*"
 # test <- system2("where", args = c("-v", executable))
 # print(test)
 
-
 #Install Dinamica EGO using included installer (Windows)
 #create string for installer
 #install_path <- paste0(getwd(), "/Model/SetupDinamicaEGO-720.exe")
-#install_path <- gsub("/", "\\\\", install_path) #replace "/" with "\\"
 
-#system command
+#replace "/" with "\\"
+#install_path <- gsub("/", "\\\\", install_path) 
+
+#run system command
 #system2(command = paste(install_path))
 
-#set environment path for Dinamica log/debug files
-#create a temporary dir for storing the Dinamica output files
-# Logdir <- "Model/Dinamica_models/Model_log_files"
-# dir.create(Logdir)
-# Win_logdir <- paste0(getwd(), "/", Logdir)
-# Win_logdir <- gsub('(*/)\\1+', '\\1', Win_logdir) #remove instances of double "/"
-# Win_logdir <- gsub("/", "\\\\", Win_logdir) #replace "/" with "\\"
-# Sys.setenv(DINAMICA_EGO_7_LOG_PATH = paste(Win_logdir))
-
-#create table for controlling simulations
+### =========================================================================
+### Simulation control table prep
+### =========================================================================
 
 #User enter scenario names to model 
-#vector abbreviations of scenario's for folder/file naming
 Scenario_names <- c("BAU", "EI_NAT", "EI_CUL", "EI_SOC", "GR_EX")
 
 #User enter start and end dates for the scenarios either enter a single number
@@ -97,44 +82,40 @@ reps <- 1
 #the transition will be too weak due to high-imbalance
 Inclusion_thres <- 0.5
 
-### =========================================================================
-### Simulation control table prep
-### =========================================================================
-
 #vector save path
 Sim_control_path <- "Tools/Simulation_control.csv"
 
-# Simulation_control_table <- data.frame(matrix(ncol = 11, nrow = 0))
-# colnames(Simulation_control_table) <- c("Simulation_num.",
-#                                          "Scenario_ID.string",
-#                                          "Simulation_ID.string",
-#                                          "Model_mode.string",
-#                                          "Scenario_start.real",
-#                                          "Scenario_end.real",
-#                                          "Step_length.real",
-#                                          "Parallel_TPC.string",
-#                                          "Spatial_interventions.string",
-#                                          "Deterministic_trans.string",
-#                                          "Completed.string")
-# 
-# #expand vector of scenario names according to number of repetitions and add to table
-# Scenario_IDs <- c(sapply(Scenario_names, function(x) rep(x, reps), simplify = TRUE))
-# Simulation_control_table[1:length(Scenario_IDs), "Scenario_ID.string"] <- Scenario_IDs
-# 
-# #fill other columns
-# Simulation_control_table$Simulation_ID.string <- rep(paste0("v", seq(1, reps, 1)), length(Scenario_names))
-# Simulation_control_table$Scenario_start.real <- if(length(unique(Scenario_start)) == 1){Scenario_start} else {c(rep(Scenario_start, length(Scenario_names)))}
-# Simulation_control_table$Scenario_end.real <- if(length(unique(Scenario_end)) == 1){Scenario_end} else {c(rep(Scenario_end, length(Scenario_names)))}
-# Simulation_control_table$Step_length.real <- Step_length
-# Simulation_control_table$Model_mode.string <- "Simulation"
-# Simulation_control_table$Simulation_num. <- seq(1, nrow(Simulation_control_table),1)
-# Simulation_control_table$Parallel_TPC.string <- "N"
-# Simulation_control_table$Spatial_interventions.string <- "Y"
-# Simulation_control_table$Deterministic_trans.string <- "Y"
-# Simulation_control_table$Completed.string <- "N"
-# 
-# #save the table
-# write_csv(Simulation_control_table, Sim_control_path)
+Simulation_control_table <- data.frame(matrix(ncol = 11, nrow = 0))
+colnames(Simulation_control_table) <- c("Simulation_num.",
+                                         "Scenario_ID.string",
+                                         "Simulation_ID.string",
+                                         "Model_mode.string",
+                                         "Scenario_start.real",
+                                         "Scenario_end.real",
+                                         "Step_length.real",
+                                         "Parallel_TPC.string",
+                                         "Spatial_interventions.string",
+                                         "Deterministic_trans.string",
+                                         "Completed.string")
+
+#expand vector of scenario names according to number of repetitions and add to table
+Scenario_IDs <- c(sapply(Scenario_names, function(x) rep(x, reps), simplify = TRUE))
+Simulation_control_table[1:length(Scenario_IDs), "Scenario_ID.string"] <- Scenario_IDs
+
+#fill other columns
+Simulation_control_table$Simulation_ID.string <- rep(paste0("v", seq(1, reps, 1)), length(Scenario_names))
+Simulation_control_table$Scenario_start.real <- if(length(unique(Scenario_start)) == 1){Scenario_start} else {c(rep(Scenario_start, length(Scenario_names)))}
+Simulation_control_table$Scenario_end.real <- if(length(unique(Scenario_end)) == 1){Scenario_end} else {c(rep(Scenario_end, length(Scenario_names)))}
+Simulation_control_table$Step_length.real <- Step_length
+Simulation_control_table$Model_mode.string <- "Simulation"
+Simulation_control_table$Simulation_num. <- seq(1, nrow(Simulation_control_table),1)
+Simulation_control_table$Parallel_TPC.string <- "N"
+Simulation_control_table$Spatial_interventions.string <- "Y"
+Simulation_control_table$Deterministic_trans.string <- "Y"
+Simulation_control_table$Completed.string <- "N"
+
+#save the table
+write_csv(Simulation_control_table, Sim_control_path)
 
 ### =========================================================================
 ### Modelling set-up
@@ -147,6 +128,7 @@ Sim_control_path <- "Tools/Simulation_control.csv"
 # DC_path <- list.files("C:/", recursive = TRUE, full.names = TRUE, pattern = ".*DinamicaConsole.*\\.exe")
 # DC_path <- gsub('(*/)\\1+', '\\1', DC_path) #remove instances of double "/"
 # DC_path <- gsub("/", "\\\\", DC_path) #replace "/" with "\\"
+# TESTING: 
 DC_path <- "C:\\Program Files\\Dinamica EGO 7\\DinamicaConsole7.exe"
 
 #create directory to store simulation logs
@@ -155,8 +137,7 @@ if (dir.exists(Sim_log_dir) == FALSE) {dir.create(Sim_log_dir, recursive = TRUE)
 
 #list objects required for modelling
 Model_tool_vars <- list(LULC_aggregation_path = "Tools/LULC_class_aggregation.xlsx", #Path to LULC class aggregation table
-                        Model_specs_path = "Tools/Model_specs.xlsx", #Path to model
-                        # specifications table
+                        Model_specs_path = "Tools/Model_specs.csv", #Path to model specifications table
                         Param_grid_path = "Tools/param-grid.xlsx", #Path to model hyper parameter grids
                         Pred_table_path = "Tools/Predictor_table.xlsx", #Path to predictor table
                         Spat_ints_path = "Tools/Spatial_interventions.csv", #Path to spatial interventions table
@@ -173,7 +154,7 @@ Model_tool_vars <- list(LULC_aggregation_path = "Tools/LULC_class_aggregation.xl
                         DC_path = DC_path) #Path to grid to standardise spatial data
 
 #Import model specifications table
-model_specs <- read_excel(Model_tool_vars$Model_specs_path)
+model_specs <- read.csv(Model_tool_vars$Model_specs_path)
 
 # Vector data periods contained in model specifications table
 Model_tool_vars$Data_periods <- unique(model_specs$Data_period_name)
@@ -205,13 +186,11 @@ list2env(Model_tool_vars, scripting_env)
 #downloads
 
 #connect to Zenodo API
-zenodo <- ZenodoManager$new()
+zenodo <- zen4R::ZenodoManager$new()
 
 #Get record info
-#TO DO: won't work until record is made open access
-rec <- zenodo$getRecordByDOI("10.5281/zenodo.7590103")
+rec <- zenodo$getRecordByDOI("10.5281/zenodo.8263509")
 files <- rec$listFiles(pretty = TRUE)
-files <- my_rec$listFiles(pretty = TRUE)
 
 #increase timeout limit for downloading file
 options(timeout=6000)
@@ -220,10 +199,10 @@ options(timeout=6000)
 tmpdir <- tempdir()
 
 #Download to tmpdir
-my_rec$downloadFiles(path = tmpdir)
+rec$downloadFiles(path = tmpdir)
 download.file(files$download, paste0(tmpdir, "/", files$filename), mode = "wb")
 
-#unzip (this can be temperamental may need to manually unzip)
+#unzip (this process can be temperamental and the user may need to manually unzip)
 #function for unzipping large files using system
 decompress_file <- function(directory, file, .file_cache = FALSE) {
 
@@ -264,7 +243,6 @@ decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache
 #using r utils::unzip
 unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip"))
 
-#TO DO: update path when Manuel has finished Zenodo upload.
 #select just the raw data
 raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data/Raw")
 
