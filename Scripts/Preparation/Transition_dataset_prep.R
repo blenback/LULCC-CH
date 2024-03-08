@@ -44,6 +44,8 @@ save_dir <- "Data/Transition_datasets/Pre_predictor_filtering"
 Periodic_dirs <- paste0(save_dir, "/", Data_periods)
 sapply(Periodic_dirs, function(x) dir.create(x,recursive = TRUE))
 
+
+
 ### =========================================================================
 ### B- Load data and filter for each time period
 ### =========================================================================

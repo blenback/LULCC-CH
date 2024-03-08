@@ -505,7 +505,7 @@ cover_poly_raw <- 0.178721
 #vector of percent of total area of Switzerland that should be protected by 2060
 #under each scenario
 perc_goals <- c(0.22,0.25,0.30)
-names(perc_goals) <- c("EI_SOC", "EI_CUL", "EI_NAT")
+names(perc_goals) <- c("EI-SOC", "EI-CUL", "EI-NAT")
 
 
 #The raw CH area produces the estimated coverage that is closest to that 
@@ -571,7 +571,7 @@ Bio_running_sum <- cumsum(rev(Bio_prio_hist$counts))
 
 # identify the first cumsum that exceeds the required n_cells and add 1 to 
 #include the lower bound of the break points
-Bio_min_ind <- min(which(Bio_running_sum > n_cells[names(n_cells)=="EI_NAT"]))
+Bio_min_ind <- min(which(Bio_running_sum > n_cells[names(n_cells)=="EI-NAT"]))
 
 #subset only the high prioirty breaks that satisfy the desired n_cells
 Bio_cuts <- c(0, Bio_prio_hist$breaks[(length(Bio_prio_hist$breaks)-Bio_min_ind):length(Bio_prio_hist$breaks)])
@@ -681,7 +681,7 @@ NCP_running_sum <- cumsum(rev(NCP_prio_hist$counts))
 
 # identify the first cumsum that exceeds the required n_cells and add 1 to 
 #include the lower bound of the break points
-NCP_min_ind <- min(which(NCP_running_sum > (n_cells[names(n_cells) == "EI_SOC"])*1.5))
+NCP_min_ind <- min(which(NCP_running_sum > (n_cells[names(n_cells) == "EI-SOC"])*1.5))
 
 #subset only the high prioirty breaks that satisfy the desired n_cells
 NCP_cuts <- c(0, NCP_prio_hist$breaks[(length(NCP_prio_hist$breaks)-NCP_min_ind):length(NCP_prio_hist$breaks)])
@@ -760,7 +760,7 @@ CUL_running_sum <- cumsum(rev(CUL_prio_hist$counts))
 
 # identify the first cumsum that exceeds the required n_cells and add 1 to 
 #include the lower bound of the break points
-CUL_min_ind <- min(which(CUL_running_sum > n_cells[names(n_cells)=="EI_NAT"]))
+CUL_min_ind <- min(which(CUL_running_sum > n_cells[names(n_cells)=="EI-NAT"]))
 
 #subset only the high prioirty breaks that satisfy the desired n_cells
 CUL_cuts <- c(0, CUL_prio_hist$breaks[(length(CUL_prio_hist$breaks)-CUL_min_ind):length(CUL_prio_hist$breaks)])

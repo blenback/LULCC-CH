@@ -13,11 +13,11 @@
 # setwd(wpath)
 
 #Vector packages for loading
-packs<-c("data.table", "raster", "tidyverse","stringr", "readr", "xlsx",
-         "Dinamica", "readxl")
+packs <- c("data.table", "raster", "tidyverse", "stringr", "readr", "xlsx",
+           "Dinamica", "readxl")
 
-new.packs<-packs[!(packs %in% installed.packages()[,"Package"])]
-if(length(new.packs)) install.packages(new.packs)
+# new.packs <- packs[!(packs %in% installed.packages()[, "Package"])]
+# if (length(new.packs)) install.packages(new.packs)
 
 # Load required packages
 invisible(lapply(packs, require, character.only = TRUE))
@@ -48,8 +48,8 @@ Scenario_trans_table_file <- paste0(Scenario_trans_table_dir, "/", Scenario_ID, 
 Trans_table <- read_csv(Scenario_trans_table_file)
 
 #if statement to remove transitions if they are being implemented deterministicly
-if(grepl("simulation", Model_mode, ignore.case = TRUE) &
-    grepl("Y", Simulation_table$Deterministic_trans.string, ignore.case = TRUE)){
+if (grepl("simulation", Model_mode, ignore.case = TRUE) &
+  grepl("Y", Simulation_table$Deterministic_trans.string, ignore.case = TRUE)) {
 
   #remove transitions with initial class == glacier
   Trans_table <- Trans_table[Trans_table$`From*` != 19,]

@@ -19,20 +19,20 @@
 Val_res_folder <- paste0(wpath, "/Results/Validation/", Sim_ID)
 Val_res_path <- paste0(Val_res_folder, "/", paste("Simulation", Sim_ID, "from", Simulation_time_steps[1, "Keys"], "to", Simulation_time_steps[nrow(Simulation_time_steps), "Values"], sep = "_"))
 
-if(grepl("simulation", Model_mode, ignore.case = TRUE)){
-validation_condition <- 0
-Validation_map_path <- "NA"
-Validation_result_path <- "NA"
-} else  {
-validation_condition <- 1
+if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
+  validation_condition <- 0
+  Validation_map_path <- "NA"
+  Validation_result_path <- "NA"
+} else {
+  validation_condition <- 1
 
-#vector file paths for results
-dir.create(Val_res_folder, recursive = TRUE)
+  #vector file paths for results
+  dir.create(Val_res_folder, recursive = TRUE)
 
-#adjust to file path
-Validation_map_path <- paste0(Val_res_path, "_map.tif")
-Validation_result_path <- paste0(Val_res_path, "_similarity_value.csv") 
-} 
+  #adjust to file path
+  Validation_map_path <- paste0(Val_res_path, "_map.tif")
+  Validation_result_path <- paste0(Val_res_path, "_similarity_value.csv")
+}
 
 
 ### =========================================================================
@@ -58,6 +58,3 @@ Final_LULC_path <- Obs_LULC_paths[desired_lulc_year]
 
 #alter file path for simulated LULC map for final simulation year
 Sim_final_LULC_path <- paste0(Sim_LULC_path_gen, Simulation_time_steps[nrow(Simulation_time_steps), "Values"], ".tif")
-
-
-
