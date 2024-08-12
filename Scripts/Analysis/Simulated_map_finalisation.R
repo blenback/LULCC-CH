@@ -6,6 +6,9 @@
 ## Author: Ben Black
 #############################################################################
 
+
+# A- Preparation ============================================================
+
 #remotes::install_github("rstudio/leaflet", ref="joe/feature/raster-options")
 
 #vector other required packages
@@ -43,9 +46,9 @@ Web_maps_dir <- "C:/Users/bblack/polybox/LULC_validation_data/LULC_maps/Switzerl
 #load aggregation scheme
 Aggregation_scheme <- read_excel(LULC_aggregation_path)
 
-### =========================================================================
-### B- Finalising simulated LULC maps
-### =========================================================================
+
+# B- Finalising simulated LULC maps======================================
+
 
 #Load in most recent non-aggregated LULC raster
 Obs_LULC_paths <- list.files("Data/Historic_LULC/NOAS04_LULC/rasterized", full.names = TRUE, pattern = ".tif")
@@ -162,9 +165,8 @@ lapply(names(Scenario_lulc_paths), function(Scenario_ID){
 
   }) #close outer loop over scenarios
 
-### =========================================================================
-### C- Regionalising LULC maps for expert validation
-### =========================================================================
+
+# C- Regionalising LULC maps for expert validation =========================
 
 # #Urban focus area: Canton Zurich
 # Cantons <- vect("Data/Preds/Raw/CH_geoms/SHAPEFILE_LV95_LN02/swissBOUNDARIES3D_1_3_TLM_KANTONSGEBIET.shp")
@@ -241,95 +243,5 @@ lapply(names(Scenario_lulc_paths), function(Scenario_ID){
 #   
 # })
 
-### =========================================================================
-### D- Leaflet time-slider map of scenario results
-### =========================================================================
 
-#load an exempler layer to produce a raster attribute table from
-exp_rast <- raster(list.files(Final_map_dir, recursive = TRUE,
-           pattern = Sim_IDs,
-           full.names = TRUE)[1])
-
-#create a raster attribute table
-LULC_rat <- data.frame(
-  ID = sort(unique(values(exp_rast)))
-)
-LULC_rat$lulc_name <- c(unlist(sapply(LULC_rat$ID, function(y) unique(unlist(Aggregation_scheme[Aggregation_scheme$Aggregated_ID == y, "Aggregated_class"])),simplify = TRUE)), "Lake", "River")
-
-#use Scenario IDs to identify Final LULC files, subset to only the start and 
-#end years, add raster attribute table and load as stacks
-Final_lulc_maps <- lapply(Scenarios, function(x) {
-  All_sim_LULC_paths <- list.files(Final_map_dir, recursive = TRUE,
-           pattern = Sim_IDs,
-           full.names = TRUE)
-  Scenario_paths <- All_sim_LULC_paths[grepl(x,All_sim_LULC_paths)]
-  Start_end_paths <- Scenario_paths[grepl(paste(c(Scenario_start, Scenario_end), collapse='|'), Scenario_paths)]
-  Start_end_layers <- stack(lapply(Start_end_paths, function(y){
-    lyr <- raster(y)
-    raster_with_att <- ratify(lyr)
-    levels(raster_with_att) <- LULC_rat
-    return(raster_with_att)
-  }))
-  names(Start_end_layers@layers) <- c(paste(Scenario_start), paste(Scenario_end))
-  names(Start_end_layers) <- c(paste(Scenario_start), paste(Scenario_end))
-  return(Start_end_layers)
-})
-names(Final_lulc_maps) <- Scenarios
-
-#colour palette
-pal <- colorFactor(c(
-"#BB0011", #Urban
-"#DDDDDD", #static
-"#668822", #Open forest
-"#117733", #closed forest
-"#44AA88", #Shrubland
-"#FFDD44", #Intensive agriculture
-"#558877", #Alpine pastures
-"#AADDCC", #Grassland
-"#DDCC66", #Permanet crops
-"#E8ECFB", #Glacier
-"#5566AA", #Rivers
-"#5566AA"), LULC_rat$ID, na.color = "transparent")
-
-Scenario_maps <- leaflet() |> 
-  addMapPane("right", zIndex = 0) |> 
-  addMapPane("left",  zIndex = 0) |>
-  addProviderTiles(providers$Esri.WorldTopoMap, group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |> 
-  addProviderTiles(providers$Esri.WorldTopoMap, group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |> 
-  addRasterImage(x = Final_lulc_maps[["BAU"]][[paste0("X", Scenario_start)]], colors = pal, options = leafletOptions(pane = "left"), group = "Business as Usual", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["BAU"]][[paste0("X", Scenario_end)]], colors = pal, options = leafletOptions(pane = "right"), group = "Business as Usual", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["EI_NAT"]][[paste0("X", Scenario_start)]], colors = pal, options = leafletOptions(pane = "left"), group = "EI for Nature", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["EI_NAT"]][[paste0("X", Scenario_end)]], colors = pal, options = leafletOptions(pane = "right"), group = "EI for Nature", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["EI_SOC"]][[paste0("X", Scenario_start)]], colors = pal, options = leafletOptions(pane = "left"), group = "EI for Society", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["EI_SOC"]][[paste0("X", Scenario_end)]], colors = pal, options = leafletOptions(pane = "right"), group = "EI for Society", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["GR_EX"]][[paste0("X", Scenario_start)]], colors = pal, options = leafletOptions(pane = "left"), group = "Growth and Extinction", project = FALSE) |>
-  addRasterImage(x = Final_lulc_maps[["GR_EX"]][[paste0("X", Scenario_end)]], colors = pal, options = leafletOptions(pane = "right"), group = "Growth and Extinction", project = FALSE) |>
-  leaflet.extras::addResetMapButton() |>
-  #add an opacity slider but only works for one half of the map
-  #addOpacitySlider(layerId = "raster1") |> 
-  #addOpacitySlider(layerId = "raster2") |> 
-  # Add an inset minimap
-  addMiniMap(
-    position = "topright",
-    tiles = providers$Esri.WorldTopoMap,
-    toggleDisplay = TRUE,
-    minimized = FALSE) |> 
-  addLayersControl(overlayGroups = c("Business as Usual", "EI for Nature", "EI for Society", "Growth and Extinction")) |>  
-  addSidebyside(layerId = "sidecontrols",
-                rightId = "baseid1",
-                leftId  = "baseid2") |> 
-   addControl("2020", position = "bottomleft")|> 
-   addControl("2060", position = "bottomright")|>
-    addLegend("bottomright", pal = pal,
-            values = LULC_rat$ID,
-            title = "Legend",
-            labFormat = labelFormat(
-            transform = function(y) {
-              LULC_rat[LULC_rat$ID == y, "lulc_name"]
-            }),
-            #labels = rast_labels,
-            opacity = 1)
-
-htmlwidgets::saveWidget(Scenario_maps, file="Results/Finalised_LULC_maps/Scenario_maps_widget.html")
-
- 
+# D- Leaflet time-slider map of scenario resultsZ =========================

@@ -1,6 +1,6 @@
-Simulation_num.,Scenario_ID.string,Simulation_ID.string,Model_mode.string,Scenario_start.real,Scenario_end.real,Step_length.real,Parallel_TPC.string,Pop_scenario.string,Econ_scenario.string,Climate_scenario.string,Spatial_interventions.string,EI_intervention_ID.string,Deterministic_trans.string,Completed.string
-1,BAU,v6,Simulation,2020,2060,5,N,Ref,Ref_Central,rcp45,Y,,N,Y
-2,EI-NAT,v6,Simulation,2020,2060,5,N,Low,Ecolo_Urban,rcp26,Y,,N,Y
-3,EI-CUL,v6,Simulation,2020,2060,5,N,Ref,Ecolo_Central,rcp26,Y,,N,Y
-4,EI-SOC,v6,Simulation,2020,2060,5,N,Ref,Combined_Urban,rcp45,Y,,N,Y
-5,GR-EX,v6,Simulation,2020,2060,5,N,High,Ref_Peri_urban,rcp85,Y,,N,Y
+Simulation_num.,Scenario_ID.string,Simulation_ID.string,Model_mode.string,Scenario_start.real,Scenario_end.real,Step_length.real,Parallel_TPC.string,Pop_scenario.string,Econ_scenario.string,Climate_scenario.string,Spatial_interventions.string,EI_interventions.string,EI_intervention_ID.string,Deterministic_trans.string,Completed.string
+1,BAU,v6,Simulation,2020,2060,5,N,Ref,Ref_Central,rcp45,Y,N,,N,Y
+2,EI-NAT,v6,Simulation,2020,2060,5,N,Low,Ecolo_Urban,rcp26,Y,Y,2,N,Y
+3,EI-CUL,v6,Simulation,2020,2060,5,N,Ref,Ecolo_Central,rcp26,Y,Y,3,N,Y
+4,EI-SOC,v6,Simulation,2020,2060,5,N,Ref,Combined_Urban,rcp45,Y,Y,4,N,Y
+5,GR-EX,v6,Simulation,2020,2060,5,N,High,Ref_Peri_urban,rcp85,Y,N,,N,Y
