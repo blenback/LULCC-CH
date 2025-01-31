@@ -1,0 +1,16 @@
+Category;Option
+Configuration; Large_patches
+Configuration; Small_patches
+Configuration; Connectivity
+Establishment_date;2020
+Establishment_date;2025
+Establishment_date;2030
+Establishment_date;2035
+Establishment_rate;Steady
+Establishment_rate;Rapid
+Establishment_rate;Lagged
+Coverage;0.22
+Coverage;0.25
+Coverage;0.3
+Effect;Preservation
+Effect;Restoration

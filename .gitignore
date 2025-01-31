@@ -1,5 +1,34 @@
+# IDE files
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
-.File_transfer_list
+.idea
+
+# Temporary files
+.gitignore
+.owncloudsync.log
+.sync_journal.db*
+
+# Configuration files
+Gdrive_api_auth.json
+.dinamica_ego_7.conf
+
+# Specific folders to ignore
+/Data
+/Model/guidebook_dinamica_5
+/Model/Useful_submodels
+/Model/Dinamica_models/Model_backup
+/Model/Dinamica_models/Model_testing
+/Model/Dinamica_models/LULCC_CH-*.ego
+/Model/Dinamica_models/LULCC_CH-*_ego_Submodels/
+/Model/SetupDinamicaEGO-720.exe
+/Results
+/PopulationModel_ValPar
+/Scenario_trans_rates
+/publication/test/nul
+/publication/LULCC_CH_ms_temp/nul
+/Model/SetupDinamicaEGO-720_WIN.exe
+
+/Historic_Focals
+/Historic-Focals

@@ -5,16 +5,16 @@
 #############################################################################
 
 #testing values for env vars
-# LULCC_CH_HPC_DIR <- "E:/LULCC_CH_Ensemble"
+# LULCC_CH_HPC_DIR <- "E:/LULCC_CH_HPC"
 # LULCC_M_CLASS_AGG <- "Tools/LULC_class_aggregation.xlsx"
 # LULCC_M_SPEC <- "Tools/Model_specs.csv"
 # LULCC_M_PARAM_GRID <- "Tools/param-grid.xlsx"
 # LULCC_M_PRED_TABLE <- "Tools/Predictor_table.xlsx"
-# LULCC_M_REF_GRID <- "Data/Ref_grid.gri"
+# LULCC_M_REF_GRID <- "Data/Ref_grid.tif"
 # LULCC_M_CAL_PARAM_DIR <- "Data/Allocation_parameters/Calibration"
 # LULCC_M_SIM_PARAM_DIR <- "Data/Allocation_parameters/Simulation"
 # LULCC_M_RATE_TABLE_DIR <- "Data/Transition_tables/prepared_trans_tables"
-# LULCC_M_SIM_CONTROL_TABLE <-  "Tools/Simulation_control.csv"
+# LULCC_M_SIM_CONTROL_TABLE <-  "Tools/Simulation_control_test.csv"
 # LULCC_M_SPAT_INTS_TABLE <- "Tools/Spatial_interventions.csv"
 # LULCC_M_EI_INTS_TABLE <- "Tools/EI_interventions.csv"
 # LULCC_M_SCENARIO_SPEC <- "Tools/Scenario_specs.csv"

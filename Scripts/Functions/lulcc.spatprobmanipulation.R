@@ -52,6 +52,9 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
 
   #loop over rows
   if (nrow(Current_interventions) != 0) {
+    
+    cat(paste0("Preparing to implement: ", nrow(Current_interventions), " according to scenario specifications for this time step \n"))
+    
     for (i in nrow(Current_interventions)) {
 
       #vector intervention details for easy reference
@@ -82,6 +85,8 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
 
         #replace values in target raster
         Prob_raster_stack@layers[[Target_classes]][ix] <- Intersecting[ix]
+        
+        cat("Implemented Urban densification intervention \n")
 
       } #close Urban_densification chunk
 
@@ -166,6 +171,7 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
           negative_test <- Prob_raster_stack@layers[[Target_classes]]
         } #close else if statement
 
+        cat("Implemented Urban sprawl intervention \n")
       } #close Urban_sprawl chunk
 
       #--------------------------------------------------------------------------
@@ -255,6 +261,7 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
           Prob_raster_stack@layers[[Target_classes]][ix] <- non_intersecting[ix]
         } #close else if statement
 
+        cat("Implemented Urban migration intervention \n")
       } #close Urban_migration chunk
 
       #--------------------------------------------------------------------------
@@ -271,9 +278,9 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
         #For this intervention there are two different specs for scenarios
         #EI-NAT: 314
         #EI-SOC: 314,334
-        if (Scenario_ID == "EI-NAT") {
+        if (Scenario_ID == "EINAT") {
           Leg[Leg$ID == 314, "type"] <- 1
-        } else if (Scenario_ID == "EI-SOC") {
+        } else if (Scenario_ID == "EISOC") {
           Leg[Leg$ID %in% c(314, 334), "type"] <- 1
         }
 
@@ -354,6 +361,7 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
           Prob_raster_stack@layers[[Target_classes]][ix] <- non_intersecting[ix]
         } #close else if statement
 
+        cat("Implemented Mountain development intervention \n")
       } #close Mountain_development chunk
 
       #--------------------------------------------------------------------------
@@ -444,6 +452,7 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
           Prob_raster_stack@layers[[Target_classes]][ix] <- non_intersecting[ix]
         } #close else if statement
 
+        cat("Implemented rural migration intervention \n")
       } #close Rural_migration chunk
 
       #--------------------------------------------------------------------------
@@ -554,6 +563,7 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
 
         } #close loop over target classes
 
+        cat("Implemented agricultural abandonment intervention \n")
       } #close Agri_abandonment chunk
 
       #--------------------------------------------------------------------------
@@ -643,10 +653,15 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
 
         } #close loop over target classes
 
+        cat("Implemented agricultural maintenance intervention \n")
       } #close Agri_maintenance chunk
 
 
     } #close loop over interventions
+    
+#--------------------------------------------------------------------------
+# Data tranformation
+#--------------------------------------------------------------------------
 
     #convert raster stack back to dataframe
     Prob_df <- raster::as.data.frame(Prob_raster_stack)
@@ -656,9 +671,9 @@ lulcc.spatprobmanipulation <- function(Intervention_table_path,
 
     #subset to only the prediction and spatial info cols
     #Raster_prob_values <- Raster_prob_values[,c("ID", "x", "y", Pred_prob_columns)]
+    
+    cat("Converted probability rasters back to data.frame \n")
   } #close if statement
-
+  
   return(Raster_prob_values)
-}
-
-# close function
+}# close function

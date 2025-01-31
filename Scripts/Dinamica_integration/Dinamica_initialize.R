@@ -8,10 +8,10 @@
 ### =========================================================================
 ### A- Preparation
 ### =========================================================================
-
+# 
 # wpath <- "E:/LULCC_CH_HPC"
 # setwd(wpath)
-# Simulation_num <- 1
+# Simulation_num <- 217
 
 # Install packages if they are not already installed
 packs <- c("data.table", "stringi", "stringr", "plyr", "readxl", #"ggpubr",
@@ -24,7 +24,10 @@ packs <- c("data.table", "stringi", "stringr", "plyr", "readxl", #"ggpubr",
 invisible(lapply(packs, require, character.only = TRUE))
 
 #load table of simulations
-Simulation_table <- read.csv(Sim_control_path)[Simulation_num,]
+Simulation_table <- read.csv(Sim_control_path)
+
+#subset to current simulation
+Simulation_table <- Simulation_table[Simulation_table$Simulation_num. == Simulation_num,]
 
 #Enter name of Scenario to be tested as string or numeric (i.e. "BAU" etc.)
 Scenario_ID <- Simulation_table$Scenario_ID.string
@@ -44,6 +47,9 @@ Scenario_end <- Simulation_table$Scenario_end.real
 
 #Enter duration of time step for modelling
 Step_length <- Simulation_table$Step_length.real
+
+#load the ref_grid to use the crs
+ref_grid <- raster(Ref_grid_path)
 
 #specify save location for simulated LULC maps for this simulation
 #LULCC_output_dir is created in Dinamica_get_env_vars.R
@@ -94,6 +100,9 @@ if (Scenario_start <= 2020) {
   #subset to correct LULC path and load
   Initial_LULC_raster <- raster(Obs_LULC_paths[grep(LULC_start_year, Obs_LULC_paths)])
 
+  #add crs from ref_grid
+  crs(Initial_LULC_raster) <- crs(ref_grid)
+
   #convert raster to dataframe
   LULC_dat <- raster::as.data.frame(Initial_LULC_raster)
 
@@ -130,7 +139,7 @@ if (Scenario_start <= 2020) {
     LULC_dat[which(LULC_dat$Pixel_value == 19 & !(LULC_dat$ID %in% Glacier_IDs)), "Pixel_value"] <- 11
 
     #convert back to raster
-    Initial_LULC_raster <- rasterFromXYZ(LULC_dat[, c("x", "y", "Pixel_value")])
+    Initial_LULC_raster <- rasterFromXYZ(LULC_dat[, c("x", "y", "Pixel_value")], crs = crs(ref_grid))
   } #close if statement for glacial modification
 
   #create a copy of the initial LULC raster files in the Simulation output folder so that it can be called within Dinamica,

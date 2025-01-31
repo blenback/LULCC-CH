@@ -1,0 +1,2 @@
+Simulation_num.,Scenario_ID.string,Simulation_ID.string,Model_mode.string,Scenario_start.real,Scenario_end.real,Step_length.real,Parallel_TPC.string,Pop_scenario.string,Econ_scenario.string,Climate_scenario.string,Spatial_interventions.string,EI_interventions.string,Deterministic_trans.string,Completed.string
+-,-,-,Simulation,2020,2060,5,N,-,-,-,Y,Y,Y,N
