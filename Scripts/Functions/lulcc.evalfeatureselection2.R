@@ -15,7 +15,7 @@
 #' @export
 
 
-lulcc.evalfeatureselection <- function(Predictor_table_path,
+lulcc.evalfeatureselection2 <- function(Predictor_table_path,
                                        Data_period_name,
                                        Dataset_scale,
                                        Pre_FS_folder,
@@ -26,33 +26,16 @@ lulcc.evalfeatureselection <- function(Predictor_table_path,
 ### A - Load results
 ### =========================================================================  
 
-#load covariate table to use the names for splitting
-Covariate_table <-  data.table(read.xlsx(Predictor_table_path, sheet = paste0(Data_period_name)))  
-
-#load in results of 2 step covariate selection 
-Feature_selection_results <- unlist(readRDS(list.files(FS_results_folder, full.names = TRUE, pattern = paste0(Data_period_name, "_combined"))), recursive = FALSE)
-
-#Within the Feature_selection results convert the dataframe of embedded covariate selection results into just a vector of the variables selected. 
-FS_results<- lapply(Feature_selection_results, function(x) {
-    collinearity_filtered_covs <- x[["collinearity_filtered_covs"]]
-  GRRF_embedded_selected_covs <- x[["GRRF_embedded_selected_covs"]][, 1]
-  output <- list(collinearity_filtered_covs = collinearity_filtered_covs, GRRF_embedded_selected_covs = GRRF_embedded_selected_covs)
-  return(output)
-})
-
-#regex to load pre selection datasets
-dataset_regex <- glob2rx(paste0(Data_period_name, "*", Dataset_scale))
 
 ### =========================================================================
 ### B - extract a list of all unique covariates in transitions datasets
 ### =========================================================================
 
 Pre_selection_data <- unlist(readRDS(list.files(Pre_FS_folder, full.names = TRUE, pattern = dataset_regex)), recursive = FALSE)
-  
 Unique_covs <- lapply(Pre_selection_data, function(x){
 
 #Identify the covariate data
-cov_data <- x[, .SD, .SDcols = Covariate_table$Covariate_ID]
+cov_data <- x[, .SD, .SDcols = Predictor_table$Covariate_ID]
 
 #remove cols which only have 1 unique value
 cov_data <- Filter(function(x)(length(unique(x))>2), cov_data)
@@ -94,8 +77,8 @@ colnames(Combined_results) <- c("covariate", "Collinearity", "Embedded")
 Filtered_results <- Combined_results[(Combined_results$Collinearity > 10 | Combined_results$Embedded >10),]
 
 Long_results <- pivot_longer(Filtered_results, cols = c('Collinearity', 'Embedded'), names_to = "FS_stage", values_to = "num_covs")
-Long_results$Clean_cov_name <- str_remove_all(Covariate_table$Covariate_ID[match(Long_results$covariate, Covariate_table$Layer_name)], paste(c("_mean_100m", "_100m", "_nhood"), collapse = "|"))
-Long_results$cov_group <- Covariate_table$CA_category[match(Long_results$covariate, Covariate_table$Layer_name)]
+Long_results$Clean_cov_name <- str_remove_all(Predictor_table$Covariate_ID[match(Long_results$covariate, Predictor_table$Layer_name)], paste(c("_mean_100m", "_100m", "_nhood"), collapse = "|"))
+Long_results$cov_group <- Predictor_table$CA_category[match(Long_results$covariate, Predictor_table$Layer_name)]
 
 FS_predictor_frequency_bar_chart <- 
     Long_results %>% ggplot(aes(y = fct_reorder(Clean_cov_name, num_covs, .desc = FALSE), x = num_covs, fill= FS_stage), alpha = 0.5)+

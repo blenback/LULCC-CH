@@ -6,8 +6,8 @@
 @submodel.group = Validation
 @notes = See the help for a detailed description of this method.
 @showproperties = yes
-@date = 2023-Nov-22 15:03:10
-@version = 7.6.0.20231102
+@date = 2024-Mar-15 10:53:53
+@version = 7.2.0.20221230
 Script {{
     // Initial map. 
     @submodel.in.constant.description = Initial Map.
@@ -29,21 +29,6 @@ Script {{
     @submodel.in.constant.order = 1
     @submodel.in.constant.title = Observed Map
     observedMap := CategoricalMap .UNBOUND;
-
-    // If true, print the value of the mean similarities on the application console. 
-    @alias = print similarities?
-    @submodel.in.constant.description = If true, print the values of the mean similarities on the application console.
-    @submodel.in.constant.optional = yes
-    @submodel.in.constant.order = 5
-    @submodel.in.constant.title = Print Similarities
-    printSimilarities := BooleanValue .yes;
-
-    // Only odd numbers are accepted. 
-    @submodel.in.constant.description = Only odd numbers are accepted.
-    @submodel.in.constant.optional = yes
-    @submodel.in.constant.order = 4
-    @submodel.in.constant.title = Window Size
-    windowSize := PositiveIntegerValue 11;
 
     // If true, the similarity is calculated using an exponential decay function 
     // truncated by the window size. Otherwise, a constant function is used within the 
@@ -102,6 +87,21 @@ Script {{
     @submodel.in.constant.title = Exponential Decay Divisor
     exponentialDecayDivisor := RealValue 2;
 
+    // If true, print the value of the mean similarities on the application console. 
+    @alias = print similarities?
+    @submodel.in.constant.description = If true, print the values of the mean similarities on the application console.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 5
+    @submodel.in.constant.title = Print Similarities
+    printSimilarities := BooleanValue .yes;
+
+    // Only odd numbers are accepted. 
+    @submodel.in.constant.description = Only odd numbers are accepted.
+    @submodel.in.constant.optional = yes
+    @submodel.in.constant.order = 4
+    @submodel.in.constant.title = Window Size
+    windowSize := PositiveIntegerValue 11;
+
     LogPolicy .result printSimilarities {{
         @alias = similarities
         firstSimilarity firstMean secondSimilarity secondMean := CalcReciprocalSimilarityMap {
@@ -113,14 +113,6 @@ Script {{
             nullValue = .default,
             exponentialDecayDivisor = exponentialDecayDivisor
         };
-    }};
-
-    minimumSimilarity := CalculateValue [
-        min(v1, v2)
-    ] .none {{
-        NumberValue firstMean 1;
-
-        NumberValue secondMean 2;
     }};
 
     // Select the minimum similarity map. 
@@ -145,6 +137,14 @@ Script {{
         }};
 
         minimumSimilarityMap := MapJunction firstSimilarityMap secondSimilarityMap;
+    }};
+
+    minimumSimilarity := CalculateValue [
+        min(v1, v2)
+    ] .none {{
+        NumberValue firstMean 1;
+
+        NumberValue secondMean 2;
     }};
 
     @alias = similarity map

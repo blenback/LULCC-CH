@@ -22,7 +22,10 @@ packs <- c("data.table", "raster", "tidyverse", "stringr", "readr", "xlsx",
 invisible(lapply(packs, require, character.only = TRUE))
 
 #load table of simulations
-Simulation_table <- read.csv(Control_table_path)[Simulation_num,]
+Simulation_table <- read.csv(Control_table_path)
+
+#subset to current simulation
+Simulation_table <- Simulation_table[Simulation_table$Simulation_num. == Simulation_num,]
 
 #Vector name of Climate scenario
 Climate_ID <- Simulation_table$Climate_scenario.string

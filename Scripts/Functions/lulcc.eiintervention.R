@@ -61,7 +61,7 @@ lulcc.eiintervention <- function(Intervention_table_path,
     Prob_perturb_thresh <- as.numeric(Intervention$Prob_perturb_thresh)
 
     #create path for intverntion rast layer
-    Intervention_data <- paste0("Data/Spat_prob_perturb_layers/Protected_areas/Future_PAs", Scenario_ID, "_PAs_", Simulation_time_step, ".tif")
+    Intervention_data <- paste0("Data/EI_intervention_layers/Future_EI/EI_ID", EI_ID, "/", Simulation_time_step, "/Future_EI_ID", EI_ID, "_year", Simulation_time_step, ".tif")
 
     #Load intervention raster
     Intervention_rast <- raster(Intervention_data)

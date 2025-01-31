@@ -1,0 +1,6 @@
+Scenario_ID,Pop_scenario,Econ_scenario,Climate_scenario,EI_prioritization,Scenario_start,Scenario_end,Step_length
+BAU,Ref,Ref_Central,rcp45,Agri_unproductive,2020,2060,5
+EINAT,Low,Ecolo_Urban,rcp26,Biodiversity,2020,2060,5
+EICUL,Ref,Ecolo_Central,rcp26,Cultural,2020,2060,5
+EISOC,Ref,Combined_Urban,rcp45,NCPs,2020,2060,5
+GREX,High,Ref_Peri_urban,rcp85,NA,2020,2060,5
