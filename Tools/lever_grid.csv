@@ -1,0 +1,15 @@
+Scenario_ID.string; BAU
+Scenario_ID.string; GREX
+Scenario_ID.string; EINAT
+Scenario_ID.string; EISOC
+Scenario_ID.string; EICUL
+Climate_scenario.string; rcp26
+Climate_scenario.string; rcp45
+Climate_scenario.string; rcp85
+Econ_scenario.string; Combined_Urban
+Econ_scenario.string; Ecolo_Urban
+Econ_scenario.string; Ecolo_Central
+Econ_scenario.string; Ref_Central
+Pop_scenario.string; Ref
+Pop_scenario.string; Low
+Pop_scenario.string; High
