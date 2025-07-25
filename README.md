@@ -1,8 +1,4 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
+<img src="https://github.com/blenback/LULCC-CH/blob/main/LULCC-CH-guide/img/LULCC-CH-logo.svg" alt="LULCC-CH logo" align="right" width="50%"/>
 
 # **LULCC-CH**
 
