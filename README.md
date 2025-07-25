@@ -1,6 +1,6 @@
-<img src="https://github.com/blenback/LULCC-CH/blob/main/LULCC-CH-guide/img/LULCC-CH-logo.svg" alt="LULCC-CH logo" align="right" width="50%"/>
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12698471.svg)](https://doi.org/10.5281/zenodo.12698471)
 
-# **LULCC-CH**
+<img src="https://github.com/blenback/LULCC-CH/blob/main/LULCC-CH-guide/img/LULCC-CH-logo.svg" alt="LULCC-CH logo" align="center" width="50%"/>
 
 A Land Use and Land Cover Change model developed for simulating
 alternative future scenarios with policy interventions in Switzerland.
