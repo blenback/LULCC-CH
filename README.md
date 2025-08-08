@@ -78,11 +78,7 @@ When using LULCC-CH, please cite the following paper:
 
 > Atribution
 >
-> **Black, B., Adde, A., Külling, N., Büth, C., Kurmann, M., Lehmann,
-> A., Altermatt, F., Guisan, A., & Gret-Regamey, A.** (2025).
-> Identifying robust conservation strategies to secure ecosystem service
-> provision under uncertainties. *In review in Global Environmental
-> Change*.
+> **Black, B., Adde, A., Farinotti, D., Guisan, A., Külling, N., Kurmann, M., Martin, C., Mayer, P., Rabe, S.E., Streit, J., Zekollari, H., & Gret-Regamey, A.** (2024). Broadening the horizon in land use change modelling: Normative scenarios for nature positive futures in Switzerland. Regional Environmental Change. <http://dx.doi.org/10.1007/s10113-024-02261-0>
 
 ## Contact
 
