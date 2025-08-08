@@ -9,11 +9,12 @@
 ### A- Preparation
 ### =========================================================================
 
-# #values for testing purposes
-# wpath <- "E:/LULCC_CH_HPC"
-# Simulation_time_step <- 2020
-# Simulation_num <- "1"
-# File_path_simulated_LULC_maps <- "Results/Dinamica_simulated_LULC/BAU/v6/simulated_LULC_scenario_BAU_simID_v6_year_"
+#values for testing purposes
+wpath <- getwd()
+Simulation_time_step <- 2020
+Simulation_num <- "2"
+File_path_simulated_LULC_maps <- "lulcc_output/SSP1/simulated_LULC_simID_SSP1_year_"
+ProjCH <- "+proj=somerc +init=epsg:2056"
 
 #set working directory
 cat(paste0("Current working directory: ", getwd(), "\n"))
@@ -23,7 +24,7 @@ packs <- c("foreach", "data.table", "raster", "tidyverse",
            "testthat", "sjmisc", "callr", # "tictoc", "doParallel",
            "stringr", "readr", "xlsx", "randomForest", # "lulcc", "pbapply",
            "Dinamica", "future", "future.apply", "parallelly", "future.callr",
-           "readxl", "terra")
+           "readxl", "terra", "yaml")
 
 # new.packs<-packs[!(packs %in% installed.packages()[,"Package"])]
 # if(length(new.packs)) install.packages(new.packs)
@@ -32,16 +33,16 @@ packs <- c("foreach", "data.table", "raster", "tidyverse",
 invisible(lapply(packs, require, character.only = TRUE))
 
 #load function for spatial transition probability manipulation
-invisible(source("Scripts/Functions/lulcc.spatprobmanipulation.R"))
-
-#load function for ei interventions
-invisible(source("Scripts/Functions/lulcc.eiintervention.R"))
+invisible(source("Scripts/Functions/implement_spatial_interventions.R"))
+invisible(source("Scripts/Functions/relative_prob_adjust.R"))
+invisible(source("Scripts/Functions/absolute_prob_adjust.R"))
 
 #Load in the grid file we are using for spatial extent and CRS
 
 #swap '.gri in ref_grid_path with .grd
 Ref_grid_path <- gsub("_grid.gri", "_grid.grd", Ref_grid_path)
 Ref_grid <- rast(Ref_grid_path)
+crs(Ref_grid) <- ProjCH #set CRS to Swiss projection
 
 #load table of simulations subsetting to current simulation
 Simulation_table <- read.csv(Sim_control_path)[Simulation_num,]
@@ -58,9 +59,6 @@ Econ_ID <- Simulation_table$Econ_scenario.string
 #Vector name of Population scenario
 Pop_ID <- Simulation_table$Pop_scenario.string
 
-#EI_intervention_ID
-EI_ID <- Simulation_table$EI_ID.string
-
 #Vector ID for this run of the scenario (e.g V1)
 Simulation_ID <- Simulation_table$Simulation_ID.string
 
@@ -72,9 +70,6 @@ Use_parallel <- Simulation_table$Parallel_TPC.string
 
 #implement spatial interventions
 Use_interventions <- Simulation_table$Spatial_interventions.string
-
-#implement EI interventions
-Use_EI_interventions <- Simulation_table$EI_interventions.string
 
 #check normalisation of transition probabilities
 Check_normalisation <- FALSE
@@ -124,6 +119,7 @@ current_LULC_path <- paste0(File_path_simulated_LULC_maps, Simulation_time_step,
 #load current LULC map
 LULC_rast <- terra::rast(current_LULC_path)
 names(LULC_rast) <- "LULC"
+crs(LULC_rast) <- ProjCH #set CRS to Swiss projection
 
 #load aggregation scheme
 Aggregation_scheme <- read_excel(LULC_aggregation_path)
@@ -142,9 +138,6 @@ cat(paste0("Layerizing current LULC map: ", current_LULC_path, "\n"))
 #For calibration mode (matching on Period_tag)
 if (grepl("calibration", Model_mode, ignore.case = TRUE)) {
   cat("--- CALIBRATION MODE --- \n")
-
-  #loading_dir <- "Data/Preds/Prepared/Stacks/Calibration"
-  #SA_pred_stack <- readRDS(list.files(loading_dir, pattern = Period_tag, full.names = TRUE))
 
   #load sheet of predictor table for time point
   pred_details <- openxlsx::read.xlsx(Pred_table_path, sheet = paste(Period_tag))
@@ -181,7 +174,7 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
   simulation_preds <- rbind(preds_static, preds_climate, preds_economic)
 
   rm(preds_static, preds_climate, preds_economic, pred_details)
-  
+
   #load layers as raster::stack
   SA_pred_stack <- rast(c(simulation_preds$Prepared_data_path))
 
@@ -189,6 +182,14 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
   names(SA_pred_stack) <- simulation_preds$Covariate_ID
 
 } #close simulation if statement
+
+  # check if crs matches ProjCH
+  if (crs(SA_pred_stack) != ProjCH) {
+    SA_pred_stack <- terra::project(SA_pred_stack, ProjCH)
+    cat(" - Projected SA_pred_stack to ProjCH \n")
+  } else {
+    cat(" - SA_pred_stack already in ProjCH \n")
+  }
 
 cat(paste0("Loaded Suitability and Accessibility predictors \n"))
 
@@ -307,18 +308,27 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
   } #close loop over cantons
 
   #save the results
-  saveRDS(Muni_urban_areas, file = "Muni_urban_areas_terra.rds")
-  
+  #saveRDS(Muni_urban_areas, file = "Muni_urban_areas_terra.rds")
+
   #add estimated population to polygons and then rasterize
   Muni_shp$Pop_est <- Muni_urban_areas$Pop_est
   pop_raster <- terra::rasterize(x = Muni_shp, y = Ref_grid, field = "Pop_est", background = NA)
   names(pop_raster) <- "Muni_pop" #TO DO: THIS MUST BE THE LAYER NAME IN THE CALIBRATION STACKS/MODELS
 
+  # check if the CRS matches ProjCH
+  if (crs(pop_raster) != ProjCH) {
+    pop_raster <- terra::project(pop_raster, ProjCH)
+    cat(" - Projected pop_raster to ProjCH \n")
+  } else {
+    cat(" - pop_raster already in ProjCH \n")
+  }
+
+
   #clean up
   rm(Canton_shp, Canton_urban_areas, Can_urban_area, canton_model, Muni_shp,
      Muni_urban_areas, munis_indices, pop_models, Pop_prediction_table,
      Urban_rast)
-  
+
   #save Pop_raster
   # writeRaster(pop_raster, "Population_raster_terra.tif", overwrite = TRUE)
 
@@ -349,12 +359,12 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
 
     #subset LULC raster by all Active_class_value
     Active_class_raster_subset <- LULC_rast == Active_class_value
-    
+
     Focal_layer <- terra::focal(x = Active_class_raster_subset,
                          w = Focal_matrices[[Required_focals_details[i,]$matrix_id]],
                          na.rm = TRUE,
                          na.policy = "omit")
-    
+
     #create file path for saving this layer
     Focal_name <- paste(Active_class_name, "nhood", Required_focals_details[i,]$matrix_id, sep = "_")
     Nhood_rasters[[Focal_name]] <- Focal_layer
@@ -395,10 +405,18 @@ if (grepl("calibration", Model_mode, ignore.case = TRUE)) {
   #load the raster of Regions
   Region_rast <- rast("Data/Bioreg_CH/Bioreg_raster.grd")
   names(Region_rast) <- "Region"
-  
+
+  #check if the CRS matches ProjCH
+  if (crs(Region_rast) != ProjCH) {
+    Region_rast <- terra::project(Region_rast, ProjCH)
+    cat(" - Projected Region_rast to ProjCH \n")
+  } else {
+    cat(" - Region_rast already in ProjCH \n")
+  }
+
   #seperate attribute table
-  Region_rat <- levels(Region_rast)[[1]] 
-  
+  Region_rat <- levels(Region_rast)[[1]]
+
   Trans_data_stack <- c(LULC_rast, SA_pred_stack, pop_raster, rast(Nhood_rasters), Region_rast)
   cat(" - Stacked all layers \n")
   names(Trans_data_stack) <- c(names(LULC_rast), names(SA_pred_stack), names(pop_raster), names(Nhood_rasters), names(Region_rast))
@@ -406,6 +424,7 @@ if (grepl("calibration", Model_mode, ignore.case = TRUE)) {
 } else {
   stop("Model mode not recognised!")
 }
+
 
 ### =========================================================================
 ### G- Run transition potential prediction for each transition
@@ -457,7 +476,7 @@ for (i in Final_LULC_classes) {
 cat(" - Created dataframe for storing prediction probabilities \n")
 
 for (i in 1:nrow(Model_lookup)) {
-  
+
   #vector details of transition
   Trans_name <- Model_lookup[i, "Trans_name"]
   Trans_ID <- Model_lookup[i, "Trans_ID"]
@@ -544,6 +563,10 @@ Raster_prob_values <- Raster_prob_values[order(as.numeric(row.names(Raster_prob_
 
 rm(Prediction_probs, NA_cells, Trans_data_stack)
 
+# save for debugging
+#saveRDS(Raster_prob_values, "Raster_prob_values.rds")
+Raster_prob_values <- readRDS("Raster_prob_values.rds")
+
 ### =========================================================================
 ### H- Scenario specific trends spatially manipulating transition probabilities
 ### =========================================================================
@@ -557,11 +580,14 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
 
     #Use function to perform manipulation of spatial transition probabilities
     #according to scenario-specific interventions
-    Raster_prob_values <- lulcc.spatprobmanipulation(Intervention_table_path = Spat_ints_path,
-                                                     Scenario_ID = Scenario_ID,
-                                                     Raster_prob_values = Raster_prob_values,
-                                                     Simulation_time_step = paste(Simulation_time_step),
-                                                     LULC_rat = LULC_rat)
+    Raster_prob_values <- implement_spatial_interventions(
+      interventions_dir = "Tools",
+      scenario_ID = "SSP0",
+      raster_prob_values = Raster_prob_values,
+      simulation_time_step = paste(Simulation_time_step),
+      LULC_rat = LULC_rat,
+      Proj = ProjCH
+      )
 
 
     ### =========================================================================
@@ -569,43 +595,6 @@ if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
     ### =========================================================================
 
     cat("Performing re-scaling following scenario interventions \n")
-
-    #vector row indices with non-zero sums of transition probabilities
-    Non_zero_indices <- which(rowSums(Raster_prob_values[, Pred_prob_columns]) > 1)
-
-    #Loop over rows performing re-scaling
-    Raster_prob_values[Non_zero_indices, Pred_prob_columns] <- as.data.frame(t(apply(Raster_prob_values[Non_zero_indices, Pred_prob_columns], MARGIN = 1, FUN = function(x) {
-      sapply(x, function(y) {
-        value <- y * 1 / sum(x)
-        value[is.na(value)] <- 0 #dividing by Zero introduces NA's so these must be converted back to zero
-        return(value)
-      })
-    })))
-
-  } #close if statement for spatial interventions
-
-  ### =========================================================================
-  ### J- EI interventions spatially manipulating transition probabilities
-  ### =========================================================================
-
-  #If statement to implement spatial interventions
-  if (Use_EI_interventions == "Y") {
-
-    cat("Implementing EI interventions \n")
-
-    #Use function to perform manipulation of spatial transition probabilities
-    #according to scenario-specific interventions
-    Raster_prob_values <- lulcc.eiintervention(Intervention_table_path = EI_ints_path,
-                                               EI_ID = EI_ID,
-                                               Raster_prob_values = Raster_prob_values,
-                                               Simulation_time_step = paste(Simulation_time_step))
-
-
-    ### =========================================================================
-    ### K- Rescale following EI interventions
-    ### =========================================================================
-
-    cat("Performing additional re-scaling following EI interventions \n")
 
     #vector row indices with non-zero sums of transition probabilities
     Non_zero_indices <- which(rowSums(Raster_prob_values[, Pred_prob_columns]) > 1)

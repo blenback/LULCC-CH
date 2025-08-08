@@ -9,9 +9,9 @@
 ### A- Preparation
 ### =========================================================================
 
-# wpath <- "E:/LULCC_CH_HPC"
-# setwd(wpath)
-# Simulation_num <- 1
+#wpath <- "X:/CH_ValPar.CH/03_workspaces/07_Modeling/LULCC-NCCS"
+#setwd(wpath)
+#Simulation_num <- 1
 
 # Install packages if they are not already installed
 packs <- c("data.table", "stringi", "stringr", "plyr", "readxl", #"ggpubr",
@@ -44,6 +44,9 @@ Scenario_end <- Simulation_table$Scenario_end.real
 
 #Enter duration of time step for modelling
 Step_length <- Simulation_table$Step_length.real
+
+# crs for Switzerland
+ProjCH <- "+proj=somerc +init=epsg:2056"
 
 #specify save location for simulated LULC maps for this simulation
 #LULCC_output_dir is created in Dinamica_get_env_vars.R
@@ -133,6 +136,9 @@ if (Scenario_start <= 2020) {
     Initial_LULC_raster <- rasterFromXYZ(LULC_dat[, c("x", "y", "Pixel_value")])
   } #close if statement for glacial modification
 
+  #set the projection of the raster to the CH projection
+  crs(Initial_LULC_raster) <- ProjCH
+  
   #create a copy of the initial LULC raster files in the Simulation output folder so that it can be called within Dinamica,
   #it should be named using the file path for simulated_LULC maps (see above) and the Simulation start year
   writeRaster(Initial_LULC_raster, save_raster_path, overwrite = TRUE, datatype = "INT1U")

@@ -1,48 +1,54 @@
 @charset = UTF-8
-@date = 2024-Jan-21 16:00:58
+@date = 2025-Aug-06 16:46:48
 @version = 7.2.0.20221230
 @submodel.import = CreateCubeOfProbabilityMaps { { \"transitionMatrix\" : Table, \"inputFolder\" : Folder } { } { \"probabilityMapsRasterCube\" : Map } }; AllocateTransitions { { \"lanscape\" : CategoricalMap, \"probabilities\" : Map, \"transitionMatrix\" : TransitionMatrix, \"percentOfTransitionsByExpansion\" : PercentMatrix, \"patchExpansionParameters\" : TransitionFunctionParameterMatrix, \"patchGenerationParameters\" : TransitionFunctionParameterMatrix } { \"printTransitionInfo\" : BooleanValue } { \"resultingLanscape\" : CategoricalMap } }; CalcSimilarityOfDifferences { { \"initialMap\" : CategoricalMap, \"observedMap\" : CategoricalMap, \"simulatedMap\" : CategoricalMap } { \"useExponentialDecay\" : BooleanValue, \"windowSize\" : PositiveIntegerValue, \"printSimilarities\" : BooleanValue, \"exponentialDecayDivisor\" : RealValue } { \"similarityMap\" : Map, \"similarity\" : RealValue } }
 Script {{
-    @collapsed = no
-    @alias = Load simulation control table
-    _ := Group .none {{
-        getEnvironmentVariables := CalculateRExpression "IyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIHNvdXJjZSBSIHNjcmlwdCBmb3IgZ2V0dGluZyBFbnZpcm9ubWVudGFsIHZhcmlhYmxlcwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX2dldF9lbnZfdmFycy5SIiwKCQkJCWVjaG89VFJVRSwKCQkJCXZlcmJvc2U9VFJVRSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNTZW5kIFNpbXVsYXRpb24gY29udHJvbCB0YWJsZSBwYXRoCm91dHB1dFN0cmluZygiU2ltX2NvbnRyb2xfcGF0aCIsIFNpbV9jb250cm9sX3BhdGgpCgojU2VuZCBTaW11bGF0aW9uIElECm91dHB1dFN0cmluZygiV29ya19kaXIiLCB3cGF0aCk=" .no {{
-        }};
-
-        workingDirectory := ExtractStructString getEnvironmentVariables $"(Work_dir)";
-
-        simulationControlTablePath := ExtractStructString getEnvironmentVariables $"(Sim_control_path)";
-
-        @collapsed = no
-        @alias = Subset control table to only simulations yet to be completed (i.e. modelled)
-        subsetControlTableToOnlySimulationsYetToBeCompletedIEModelled := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBzdWJzZXQgdGhlIGNvbnRyb2wgdGFibGUgdG8gcmVtb3ZlIHNpbXVsYXRpb25zCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIGNvbnRyb2wgdGFibGUgcGF0aApDb250cm9sX3RhYmxlX3BhdGggPC0gczEKCiNyZWNlaXZlIHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMyCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0IGZvciBzdWJzZXR0aW5nIHRhYmxlCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2Ffc3Vic2V0X2NvbnRyb2xfdGFibGUuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojU2VuZCBiYWNrIHN1YnNldHRlZCB0YWJsZQpvdXRwdXRUYWJsZSgiUmVtYWluaW5nX3NpbXVsYXRpb25zIiwgQ29udHJvbF90YWJsZSk=" .no {{
-            @alias = Control table path
-            NumberString simulationControlTablePath 1;
-
-            @alias = work_dir
-            NumberString workingDirectory 2;
-        }};
-
-        @viewer.table = yes
-        subsettedControlTable := ExtractStructTable subsetControlTableToOnlySimulationsYetToBeCompletedIEModelled $"(Remaining_simulations)";
+    getWorkingDir := CalculateRExpression "CiMgR2V0IGVudmlyb25tZW50IHZhcmlhYmxlcyBzZXQgZnJvbSBCQVNICiNMVUxDQ19DSF9IUENfRElSIDwtIFN5cy5nZXRlbnYoeCA9ICJMVUxDQ19DSF9IUENfRElSIiwgbmFtZXMgPSBUUlVFKQoKI3Rlc3RpbmcgdmFsdWUgCkxVTENDX0NIX0hQQ19ESVIgPC0gIlg6L0NIX1ZhbFBhci5DSC8wM193b3Jrc3BhY2VzLzA3X01vZGVsaW5nL0xVTENDLU5DQ1MiCgojU2VuZCBXb3JraW5nX2RpcgpvdXRwdXRTdHJpbmcoIldvcmtfZGlyIiwgTFVMQ0NfQ0hfSFBDX0RJUik=" .no {{
     }};
 
-    //
-    // ===
-    // Iterate over each row of the simulation control table performing the specifcied 
-    // simulation 
-    @collapsed = no
-    @alias = Simulation iteration
-    _ := ForEach subsettedControlTable subsettedControlTable {{
-        step = step;
+    @viewer.string = yes
+    workingDirectory := ExtractStructString getWorkingDir $"(Work_dir)";
 
-        @viewer.step = yes
-        simulationNumber := Step step;
+    Workdir workingDirectory {{
+        workdir = workdir;
 
         @collapsed = no
-        @alias = Set working directory
-        Workdir workingDirectory {{
-            workdir = workdir;
+        @alias = Load simulation control table
+        _ := Group .none {{
+            @collapsed = no
+            getEnvironmentVariables := CalculateRExpression "IyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIHNvdXJjZSBSIHNjcmlwdCBmb3IgZ2V0dGluZyBFbnZpcm9ubWVudGFsIHZhcmlhYmxlcwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI3JlY2VpdmUgYW5kIHNldCB3b3JraW5nIGRpcmVjdG9yeQp3cGF0aCA8LSBzMQpzZXR3ZCh3cGF0aCkKCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9nZXRfZW52X3ZhcnMuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUsCgkJCQlsb2NhbCA9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojU2VuZCBTaW11bGF0aW9uIGNvbnRyb2wgdGFibGUgcGF0aApvdXRwdXRTdHJpbmcoIlNpbV9jb250cm9sX3BhdGgiLCBTaW1fY29udHJvbF9wYXRoKQoK" .no {{
+                NumberString workingDirectory 1;
+            }};
+
+            @viewer.string = yes
+            simulationControlTablePath := ExtractStructString getEnvironmentVariables $"(Sim_control_path)";
+
+            @collapsed = no
+            @alias = Subset control table to only simulations yet to be completed (i.e. modelled)
+            @viewer.result = yes
+            subsetControlTableToOnlySimulationsYetToBeCompletedIEModelled := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBzdWJzZXQgdGhlIGNvbnRyb2wgdGFibGUgdG8gcmVtb3ZlIHNpbXVsYXRpb25zCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIGFuZCBzZXQgd29ya2luZyBkaXJlY3RvcnkKd3BhdGggPC0gczEKc2V0d2Qod3BhdGgpCgojcmVjZWl2ZSBjb250cm9sIHRhYmxlIHBhdGgKQ29udHJvbF90YWJsZV9wYXRoIDwtIHMyCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0IGZvciBzdWJzZXR0aW5nIHRhYmxlCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2Ffc3Vic2V0X2NvbnRyb2xfdGFibGUuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUsCgkJCQlsb2NhbCA9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojU2VuZCBiYWNrIHN1YnNldHRlZCB0YWJsZQpvdXRwdXRUYWJsZSgiUmVtYWluaW5nX3NpbXVsYXRpb25zIiwgQ29udHJvbF90YWJsZSk=" .no {{
+                @alias = work_dir
+                NumberString workingDirectory 1;
+
+                @alias = Control table path
+                NumberString simulationControlTablePath 2;
+            }};
+
+            @viewer.table = yes
+            subsettedControlTable := ExtractStructTable subsetControlTableToOnlySimulationsYetToBeCompletedIEModelled $"(Remaining_simulations)";
+        }};
+
+        //
+        // ===
+        // Iterate over each row of the simulation control table performing the specifcied 
+        // simulation 
+        @collapsed = no
+        @alias = Simulation iteration
+        _ := ForEach subsettedControlTable subsettedControlTable {{
+            step = step;
+
+            @viewer.step = yes
+            simulationNumber := Step step;
 
             @collapsed = no
             @viewer.executionCompletedSucessfully = yes
@@ -53,30 +59,34 @@ Script {{
                     // Prepare maps, create folders and pass back file paths for current simulation 
                     @collapsed = no
                     @viewer.result = yes
-                    initializeCurrentSimulation := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBpbml0aWFsaXplIG1vZGVsIHJ1biBzcGVjaWZpY2F0aW9ucyBpbiBEaW5hbWljYSAgCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNzaW11bGF0aW9uIG51bWJlciBiZWluZyBwZXJmb3JtZWQKU2ltdWxhdGlvbl9udW0gPC0gdjEKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBzb3VyY2UgUiBzY3JpcHQgZm9yIGdldHRpbmcgRW52aXJvbm1lbnRhbCB2YXJpYWJsZXMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9nZXRfZW52X3ZhcnMuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfaW5pdGlhbGlzZS5SIiwKCQkJCWVjaG89VFJVRSwKCQkJCXZlcmJvc2U9VFJVRSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNzZW5kIHN0ZXAgbGVuZ3RoCm91dHB1dERvdWJsZSgiU3RlcF9sZW5ndGgiLCBTdGVwX2xlbmd0aCkgIAoKI1NlbmQgU2ltdWxhdGlvbiBJRApvdXRwdXRTdHJpbmcoIlNpbV9pZCIsIFNpbXVsYXRpb25fSUQpCgojc2VuZCBNb2RlbCBtb2RlCm91dHB1dFN0cmluZygiTW9kZWxfbW9kZSIsIE1vZGVsX21vZGUpCgojc2VuZCBNb2RlbCB0aW1lIHN0ZXAgdGFibGUgdG8gRGluYW1pY2EgcmVjZWl2ZXI6IHNpbXVsYXRpb25fdGltZV9zdGVwcwpvdXRwdXRMb29rdXBUYWJsZSgic2ltdWxhdGlvbl90aW1lX3N0ZXBzIiwgbW9kZWxfdGltZV9zdGVwcyRLZXlzLCBtb2RlbF90aW1lX3N0ZXBzJFZhbHVlcykKCiNzZW5kIHNpbXVsYXRlZCBMVUxDIGZvbGRlciBwYXRoIHRvIERpbmFtaWNhIHJlY2VpdmVyOiBzaW1fbHVsY19mb2xkZXJfcGF0aApvdXRwdXRTdHJpbmcoInNpbV9sdWxjX2ZvbGRlcl9wYXRoIiwgc2ltdWxhdGVkX0xVTENfZmlsZV9wYXRoKQoKI3NlbmQgaW5pdGlhbCBMVUxDIG1hcCBmaWxlIHBhdGggdG8gRGluYW1pY2EgcmVjZWl2ZXI6ICAKb3V0cHV0U3RyaW5nKCJpbml0aWFsX2x1bGNfcGF0aCIsIHNhdmVfcmFzdGVyX3BhdGgpCgojc2VuZCBmb2xkZXIgcGF0aCBhcyBzdHJpbmcgdG8gRGluYW1pY2EgcmVjZWl2ZXI6IEFsbG9jYXRpb25fcGFyYW1zX2ZvbGRlcl9wYXRoCm91dHB1dFN0cmluZygiQWxsb2NhdGlvbl9wYXJhbXNfZm9sZGVyX3BhdGgiLCBQYXJhbXNfZm9sZGVyX0RpbmFtaWNhKQoKI3NlbmQgZm9sZGVyIHBhdGggYXMgc3RyaW5nIHRvIERpbmFtaWNhIHJlY2VpdmVyOiB0cmFuc19tYXRyaXhfZm9sZGVyX3BhdGgKb3V0cHV0U3RyaW5nKCJ0cmFuc19tYXRyaXhfZm9sZGVyX3BhdGgiLCBUcmFuc19yYXRlX3RhYmxlX2RpcikKCg==" .no {{
+                    initializeCurrentSimulation := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBpbml0aWFsaXplIG1vZGVsIHJ1biBzcGVjaWZpY2F0aW9ucyBpbiBEaW5hbWljYSAgCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIGFuZCBzZXQgd29ya2luZyBkaXJlY3RvcnkKd3BhdGggPC0gczEKc2V0d2Qod3BhdGgpCgojc2ltdWxhdGlvbiBudW1iZXIgYmVpbmcgcGVyZm9ybWVkClNpbXVsYXRpb25fbnVtIDwtIHYxCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgc291cmNlIFIgc2NyaXB0IGZvciBnZXR0aW5nIEVudmlyb25tZW50YWwgdmFyaWFibGVzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfZ2V0X2Vudl92YXJzLlIiLAoJCQkJZWNobz1UUlVFLAoJCQkJdmVyYm9zZT1UUlVFLAoJCQkJbG9jYWwgPSBlbnZpcm9ubWVudCgpKQoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX2luaXRpYWxpemUuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUsCgkJCQlsb2NhbCA9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgojc2VuZCBzdGVwIGxlbmd0aApvdXRwdXREb3VibGUoIlN0ZXBfbGVuZ3RoIiwgU3RlcF9sZW5ndGgpICAKCiNTZW5kIFNpbXVsYXRpb24gSUQKb3V0cHV0U3RyaW5nKCJTaW1faWQiLCBhcy5jaGFyYWN0ZXIoU2ltdWxhdGlvbl9JRCkpCgojc2VuZCBNb2RlbCBtb2RlCm91dHB1dFN0cmluZygiTW9kZWxfbW9kZSIsIE1vZGVsX21vZGUpCgojc2VuZCBNb2RlbCB0aW1lIHN0ZXAgdGFibGUgdG8gRGluYW1pY2EgcmVjZWl2ZXI6IHNpbXVsYXRpb25fdGltZV9zdGVwcwpvdXRwdXRMb29rdXBUYWJsZSgic2ltdWxhdGlvbl90aW1lX3N0ZXBzIiwgbW9kZWxfdGltZV9zdGVwcyRLZXlzLCBtb2RlbF90aW1lX3N0ZXBzJFZhbHVlcykKCiNzZW5kIHNpbXVsYXRlZCBMVUxDIGZvbGRlciBwYXRoIHRvIERpbmFtaWNhIHJlY2VpdmVyOiBzaW1fbHVsY19mb2xkZXJfcGF0aApvdXRwdXRTdHJpbmcoInNpbV9sdWxjX2ZvbGRlcl9wYXRoIiwgc2ltdWxhdGVkX0xVTENfZmlsZV9wYXRoKQoKI3NlbmQgaW5pdGlhbCBMVUxDIG1hcCBmaWxlIHBhdGggdG8gRGluYW1pY2EgcmVjZWl2ZXI6ICAKb3V0cHV0U3RyaW5nKCJpbml0aWFsX2x1bGNfcGF0aCIsIHNhdmVfcmFzdGVyX3BhdGgpCgojc2VuZCBmb2xkZXIgcGF0aCBhcyBzdHJpbmcgdG8gRGluYW1pY2EgcmVjZWl2ZXI6IEFsbG9jYXRpb25fcGFyYW1zX2ZvbGRlcl9wYXRoCm91dHB1dFN0cmluZygiQWxsb2NhdGlvbl9wYXJhbXNfZm9sZGVyX3BhdGgiLCBQYXJhbXNfZm9sZGVyX0RpbmFtaWNhKQoKI3NlbmQgZm9sZGVyIHBhdGggYXMgc3RyaW5nIHRvIERpbmFtaWNhIHJlY2VpdmVyOiB0cmFuc19tYXRyaXhfZm9sZGVyX3BhdGgKb3V0cHV0U3RyaW5nKCJ0cmFuc19tYXRyaXhfZm9sZGVyX3BhdGgiLCBUcmFuc19yYXRlX3RhYmxlX2RpcikKCg==" .no {{
+                        @alias = working directory
+                        NumberString workingDirectory 1;
+
                         @alias = Row of current simulation in table
                         NumberValue simulationNumber 1;
                     }};
 
-                    @viewer.string = yes
-                    receiveInitialLulcFilePath := ExtractStructString initializeCurrentSimulation $"(initial_lulc_path)";
+                    receiveModelMode := ExtractStructString initializeCurrentSimulation $"(Model_mode)";
 
                     @viewer.lookupTable = yes
                     receiveTableOfTimeStepsDefiningLengthOfSimulation := ExtractStructLookupTable initializeCurrentSimulation $"(simulation_time_steps)";
-
-                    stepLength := ExtractStructNumber initializeCurrentSimulation $"(Step_length)";
-
-                    receiveModelMode := ExtractStructString initializeCurrentSimulation $"(Model_mode)";
 
                     @viewer.string = yes
                     receiveFolderPathForTablesOfAllocationAlgorithmParameters := ExtractStructString initializeCurrentSimulation $"(Allocation_params_folder_path)";
 
                     @viewer.string = yes
+                    receiveInitialLulcFilePath := ExtractStructString initializeCurrentSimulation $"(initial_lulc_path)";
+
+                    @viewer.string = yes
                     receiveFilePathForSimulatedLulcMaps := ExtractStructString initializeCurrentSimulation $"(sim_lulc_folder_path)";
 
+                    receiveDirectoryForTransitionMatrices := ExtractStructString initializeCurrentSimulation $"(trans_matrix_folder_path)";
+
+                    @viewer.string = yes
                     receiveSimulationId := ExtractStructString initializeCurrentSimulation $"(Sim_id)";
 
-                    receiveDirectoryForTransitionMatrices := ExtractStructString initializeCurrentSimulation $"(trans_matrix_folder_path)";
+                    stepLength := ExtractStructNumber initializeCurrentSimulation $"(Step_length)";
                 }};
 
                 @collapsed = no
@@ -90,7 +100,7 @@ Script {{
                     @alias = Transition rate table control
                     _ := Group .none {{
                         @collapsed = no
-                        loadTransitionRateTable := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBsb2FkIFNjZW5hcmlvL3RpbWUgc3BlY2lmaWMgdHJhbnNpdGlvbiBtYXRyaXggCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMxCgojcmVjZWl2ZSBwYXRoIHRvIGNvbnRyb2wgdGFibGUKQ29udHJvbF90YWJsZV9wYXRoIDwtIHMyCgpUcmFuc19yYXRlX3RhYmxlX2RpciA8LSBzMwoKI3ZhbHVlcyBmb3IgdGVzdGluZyBwdXJwb3NlcwojIFNpbXVsYXRpb25feWVhciA8LSAiMjAxMCIKIyBTaW11bGF0aW9uX251bSA8LSAiMSIKCiNSZWNlaXZlIGN1cnJlbnQgc2ltdWxhdGlvbiB0aW1lClNpbXVsYXRpb25feWVhciA8LSB2MQoKI3NpbXVsYXRpb24gbnVtYmVyIGJlaW5nIHBlcmZvcm1lZApTaW11bGF0aW9uX251bSA8LSB2MgoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX2xvYWRfdHJhbnNfbWF0cml4LlIiLAoJCQkJZWNobz1UUlVFLAoJCQkJdmVyYm9zZT1UUlVFKQoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNlbmQgRGluYW1pY2Egb3V0cHV0cwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI091dHB1dCB0YWJsZSB0byBEaW5hbWljYQpvdXRwdXRUYWJsZSgiVHJhbnNfcmF0ZV90YWJsZSIsIFRyYW5zX3RhYmxlKQ==" .no {{
+                        loadTransitionRateTable := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBsb2FkIFNjZW5hcmlvL3RpbWUgc3BlY2lmaWMgdHJhbnNpdGlvbiBtYXRyaXggCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMxCnNldHdkKHdwYXRoKQoKI3JlY2VpdmUgcGF0aCB0byBjb250cm9sIHRhYmxlCkNvbnRyb2xfdGFibGVfcGF0aCA8LSBzMgoKVHJhbnNfcmF0ZV90YWJsZV9kaXIgPC0gczMKCiN2YWx1ZXMgZm9yIHRlc3RpbmcgcHVycG9zZXMKIyBTaW11bGF0aW9uX3llYXIgPC0gIjIwMTAiCiMgU2ltdWxhdGlvbl9udW0gPC0gIjEiCgojUmVjZWl2ZSBjdXJyZW50IHNpbXVsYXRpb24gdGltZQpTaW11bGF0aW9uX3llYXIgPC0gdjEKCiNzaW11bGF0aW9uIG51bWJlciBiZWluZyBwZXJmb3JtZWQKU2ltdWxhdGlvbl9udW0gPC0gdjIKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTb3VyY2UgUiBzY3JpcHQKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9sb2FkX3RyYW5zX21hdHJpeC5SIiwKCQkJCWVjaG89VFJVRSwKCQkJCXZlcmJvc2U9VFJVRSwKCQkJCWxvY2FsID0gZW52aXJvbm1lbnQoKSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNPdXRwdXQgdGFibGUgdG8gRGluYW1pY2EKb3V0cHV0VGFibGUoIlRyYW5zX3JhdGVfdGFibGUiLCBUcmFuc190YWJsZSk=" .no {{
                             @alias = Working directory
                             NumberString workingDirectory 1;
 
@@ -124,6 +134,34 @@ Script {{
                     @viewer.map = yes
                     updatedLulcMap := MuxCategoricalMap loadInitialLulcMap loadUpdatedLulcMap;
 
+                    @collapsed = no
+                    @alias = Transition potential calculation
+                    _ := Group .none {{
+                        @collapsed = no
+                        transitionPotentialCalculation := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCBmb3IgdHJhbnNpdGlvbiBwb3RlbnRpYWwgY2FsY3VsYXRpb24gYW5kIG1vZGlmaWNhdGlvbnMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBSZWNlaXZlIERpbmFtaWNhIGlucHV0cwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI3JlY2VpdmUgYW5kIHNldCB3b3JraW5nIGRpcmVjdG9yeQp3cGF0aCA8LSBzMQpzZXR3ZCh3cGF0aCkKCiNSZWNlaXZlIGZvbGRlciBwYXRoIGZvciBsb2FkaW5nIHNpbXVsYXRlZCBMVUxDIG1hcHMKRmlsZV9wYXRoX3NpbXVsYXRlZF9MVUxDX21hcHMgPC0gczIKCiNSZWNlaXZlIGN1cnJlbnQgc2ltdWxhdGlvbiB0aW1lClNpbXVsYXRpb25fdGltZV9zdGVwIDwtIHYxCgojc2ltdWxhdGlvbiBudW1iZXIgYmVpbmcgcGVyZm9ybWVkClNpbXVsYXRpb25fbnVtIDwtIHYyCgojcHJvYl9tYXBfZm9sZGVyIDwtIHBhc3RlMCh3cGF0aCwgIi9SZXN1bHRzL1ByZWRfcHJvYl9tYXBzL1NTUDAvIiwgU2ltdWxhdGlvbl90aW1lX3N0ZXApCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgc291cmNlIFIgc2NyaXB0IGZvciBnZXR0aW5nIEVudmlyb25tZW50YWwgdmFyaWFibGVzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfZ2V0X2Vudl92YXJzLlIiLAoJCQkJZWNobz1UUlVFLAoJCQkJdmVyYm9zZT1UUlVFLAoJCQkJbG9jYWwgPSBlbnZpcm9ubWVudCgpKQoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX3RyYW5zX3BvdGVudF9jYWxjLlIiLAogICAgICAgZWNobz1UUlVFLAogICAgICAgdmVyYm9zZT1UUlVFLAogICAgICAgbG9jYWw9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgpvdXRwdXRTdHJpbmcoInByb2JtYXBfZm9sZGVyX3BhdGgiLCBwcm9iX21hcF9mb2xkZXIp" .no {{
+                            @alias = working directory
+                            NumberString workingDirectory 1;
+
+                            @alias = File path for simulated LULC maps
+                            NumberString receiveFilePathForSimulatedLulcMaps 2;
+
+                            @alias = Time_step
+                            NumberValue timeStep 1;
+
+                            //
+                            // ===
+                            // Row of current simulation in table 
+                            @alias = Current simulation number
+                            NumberValue simulationNumber 2;
+                        }};
+
+                        @viewer.string = yes
+                        folderPathForProbabilityMaps := ExtractStructString transitionPotentialCalculation $"(probmap_folder_path)";
+
+                        @viewer.probabilityMapsRasterCube = yes
+                        createCubeOfProbabilityMaps7123 := CreateCubeOfProbabilityMaps transitionRatesTable folderPathForProbabilityMaps;
+                    }};
+
                     @alias = Load allocation parameters
                     _ := Group .none {{
                         @collapsed = no
@@ -144,50 +182,33 @@ Script {{
 
                         @collapsed = no
                         @viewer.result = yes
-                        splitParamTable := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBtb2RpZnkgYWxsb2NhdGlvbiBwYXJhbWV0ZXIgdGFibGUgZm9ybWF0CiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNSZWNlaXZlIHBhcmFtZXRlciB0YWJsZQpQYXJhbV90YWJsZSA8LSB0MQoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX21vZGlmeV9wYXJhbV90YWJsZS5SIiwKICAgICAgIGVjaG89VFJVRSwKICAgICAgIHZlcmJvc2U9VFJVRSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNPdXRwdXQgJSBFeHBhbnNpb24gdGFibGUKIyhOb3RlIHRoZSAnLDInIHBhcmFtZXRlciBpcyBuZWNlc3NhcnkgZm9yIERpbmFtaWNhIHRvIHJlZ2lzdGVyIHRoYXQgdGhlIHRhYmxlIGhhcyAyIGtleSBjb2x1bW5zIChGcm9tIGFuZCBUbykpCm91dHB1dFRhYmxlKCJFeHBhbmRlcl90YWJsZSIsIEV4cGFuZGVyX3RhYmxlLCAyKQpvdXRwdXRUYWJsZSgiUGF0Y2hfdGFibGUiLCBQYXRjaF90YWJsZSwgMikK" .no {{
+                        splitParamTable := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBtb2RpZnkgYWxsb2NhdGlvbiBwYXJhbWV0ZXIgdGFibGUgZm9ybWF0CiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgUmVjZWl2ZSBEaW5hbWljYSBpbnB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNyZWNlaXZlIGFuZCBzZXQgd29ya2luZyBkaXJlY3RvcnkKd3BhdGggPC0gczEKc2V0d2Qod3BhdGgpCgojUmVjZWl2ZSBwYXJhbWV0ZXIgdGFibGUKUGFyYW1fdGFibGUgPC0gdDEKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTb3VyY2UgUiBzY3JpcHQKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9tb2RpZnlfcGFyYW1fdGFibGUuUiIsCiAgICAgICBlY2hvPVRSVUUsCiAgICAgICB2ZXJib3NlPVRSVUUsCiAgICAgICBsb2NhbCA9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojT3V0cHV0ICUgRXhwYW5zaW9uIHRhYmxlCiMoTm90ZSB0aGUgJywyJyBwYXJhbWV0ZXIgaXMgbmVjZXNzYXJ5IGZvciBEaW5hbWljYSB0byByZWdpc3RlciB0aGF0IHRoZSB0YWJsZSBoYXMgMiBrZXkgY29sdW1ucyAoRnJvbSBhbmQgVG8pKQpvdXRwdXRUYWJsZSgiRXhwYW5kZXJfdGFibGUiLCBFeHBhbmRlcl90YWJsZSwgMikKb3V0cHV0VGFibGUoIlBhdGNoX3RhYmxlIiwgUGF0Y2hfdGFibGUsIDIpCg==" .no {{
+                            @alias = Working directory
+                            NumberString workingDirectory 1;
+
+                            @alias = Allocation param table
                             NumberTable loadTableOfAllocationParameters 1;
                         }};
+
+                        @viewer.table = yes
+                        patchRelatedParams := ExtractStructTable splitParamTable $"(Patch_table)";
 
                         @alias = % expansion table
                         @viewer.table = yes
                         expansionTable := ExtractStructTable splitParamTable $"(Expander_table)";
-
-                        @viewer.table = yes
-                        patchRelatedParams := ExtractStructTable splitParamTable $"(Patch_table)";
-                    }};
-
-                    @collapsed = no
-                    @alias = Transition potential calculation
-                    _ := Group .none {{
-                        @collapsed = no
-                        @alias = Transition potential R script
-                        transitionPotentialRScript := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCBmb3IgdHJhbnNpdGlvbiBwb3RlbnRpYWwgY2FsY3VsYXRpb24gYW5kIG1vZGlmaWNhdGlvbnMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBSZWNlaXZlIERpbmFtaWNhIGlucHV0cwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI1JlY2VpdmUgZm9sZGVyIHBhdGggZm9yIGxvYWRpbmcgc2ltdWxhdGVkIExVTEMgbWFwcwpGaWxlX3BhdGhfc2ltdWxhdGVkX0xVTENfbWFwcyA8LSBzMgoKI1JlY2VpdmUgY3VycmVudCBzaW11bGF0aW9uIHRpbWUKU2ltdWxhdGlvbl90aW1lX3N0ZXAgPC0gdjEKCiNzaW11bGF0aW9uIG51bWJlciBiZWluZyBwZXJmb3JtZWQKU2ltdWxhdGlvbl9udW0gPC0gdjIKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBzb3VyY2UgUiBzY3JpcHQgZm9yIGdldHRpbmcgRW52aXJvbm1lbnRhbCB2YXJpYWJsZXMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9nZXRfZW52X3ZhcnMuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfdHJhbnNfcG90ZW50X2NhbGMuUiIsCiAgICAgICBlY2hvPVRSVUUsCiAgICAgICB2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgpvdXRwdXRTdHJpbmcoInByb2JtYXBfZm9sZGVyX3BhdGgiLCBwcm9iX21hcF9mb2xkZXIp" .no {{
-                            @alias = File path for simulated LULC maps
-                            NumberString receiveFilePathForSimulatedLulcMaps 2;
-
-                            @alias = Time_step
-                            NumberValue timeStep 1;
-
-                            //
-                            // ===
-                            // Row of current simulation in table 
-                            @alias = Current simulation number
-                            NumberValue simulationNumber 2;
-                        }};
-
-                        @viewer.string = yes
-                        folderPathForProbabilityMaps := ExtractStructString transitionPotentialRScript $"(probmap_folder_path)";
-
-                        @viewer.probabilityMapsRasterCube = yes
-                        createCubeOfProbabilityMaps7123 := CreateCubeOfProbabilityMaps transitionRatesTable folderPathForProbabilityMaps;
                     }};
 
                     @alias = Transition allocation
                     _ := Group .none {{
+                        // Alter the simulated LULC save path to use the year of the subsequent time step 
+                        // i.e. if the time step is 2025-2030 the map is saved as '2030' 
                         @collapsed = no
-                        createSimulatedLulcSavePath := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBmaW5hbGl6ZSBzYXZlIHBhdGggZm9yIHNpbXVsYXRlZCBMVUxDIG1hcAojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgRGluYW1pY2EgaW5wdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojcmVjZWl2ZSBiYXNpYyBwYXRoIGZyb20gRGluYW1pY2EgKHByb2R1Y2VkIGJ5IHNjcmlwdCBEaW5hbWljYV9pbml0aWFsaXplKQpMVUxDX2Jhc2VfcGF0aCA8LSBzMQoKI3JlY2VpdmUgdGltZSBzdGVwClRpbWVfc3RlcCA8LSB2MQoKI3JlY2VpdmUgc3RlcCBsZW5ndGgKU3RlcF9sZW5ndGggPC0gdjIKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTb3VyY2UgUiBzY3JpcHQKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9tb2RpZnlfbHVsY19zYXZlX3BhdGguUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNlbmQgRGluYW1pY2Egb3V0cHV0cwojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI091dHB1dCB0aGUgcGF0aApvdXRwdXRTdHJpbmcoInNpbXVsYXRlZF9sdWxjX3NhdmVfcGF0aCIsIEZpbmFsX2xVTENfcGF0aCkKCiNvdXRwdXQgdGhlIHNpbXVsYXRlZCBtYXAgeWVhciBmb3IgdXNlIGluIHRoZSBpbXBsZW1lbnRhdGlvbiBvZiBkZXRlcm1pbmlzdGljIHRyYW5zaXRpb25zCm91dHB1dFN0cmluZygiU2ltdWxhdGVkX0xVTENfeWVhciIsIFNpbXVsYXRlZF9sdWxjX3llYXIpCg==" .no {{
+                        modifySimulatedLulcSavePath := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBmaW5hbGl6ZSBzYXZlIHBhdGggZm9yIHNpbXVsYXRlZCBMVUxDIG1hcAojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgRGluYW1pY2EgaW5wdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojcmVjZWl2ZSBhbmQgc2V0IHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMxCnNldHdkKHdwYXRoKQoKI3JlY2VpdmUgYmFzaWMgcGF0aCBmcm9tIERpbmFtaWNhIChwcm9kdWNlZCBieSBzY3JpcHQgRGluYW1pY2FfaW5pdGlhbGl6ZSkKTFVMQ19iYXNlX3BhdGggPC0gczIKCiNyZWNlaXZlIHRpbWUgc3RlcApUaW1lX3N0ZXAgPC0gdjEKCiNyZWNlaXZlIHN0ZXAgbGVuZ3RoClN0ZXBfbGVuZ3RoIDwtIHYyCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfbW9kaWZ5X2x1bGNfc2F2ZV9wYXRoLlIiLAoJCQkJZWNobz1UUlVFLAoJCQkJdmVyYm9zZT1UUlVFLAoJCQkJbG9jYWwgPSBlbnZpcm9ubWVudCgpKQoKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNPdXRwdXQgdGhlIHBhdGgKb3V0cHV0U3RyaW5nKCJzaW11bGF0ZWRfbHVsY19zYXZlX3BhdGgiLCBGaW5hbF9sVUxDX3BhdGgpCgojb3V0cHV0IHRoZSBzaW11bGF0ZWQgbWFwIHllYXIgZm9yIHVzZSBpbiB0aGUgaW1wbGVtZW50YXRpb24gb2YgZGV0ZXJtaW5pc3RpYyB0cmFuc2l0aW9ucwpvdXRwdXRTdHJpbmcoIlNpbXVsYXRlZF9MVUxDX3llYXIiLCBTaW11bGF0ZWRfbHVsY195ZWFyKQo=" .no {{
+                            @alias = working directory
+                            NumberString workingDirectory 1;
+
                             @alias = Simulated LULC map base path
-                            NumberString receiveFilePathForSimulatedLulcMaps 1;
+                            NumberString receiveFilePathForSimulatedLulcMaps 2;
 
                             @alias = Current time
                             NumberValue timeStep 1;
@@ -195,9 +216,6 @@ Script {{
                             @alias = Model step length
                             NumberValue stepLength 2;
                         }};
-
-                        @viewer.string = yes
-                        simulatedLulcSavePath := ExtractStructString createSimulatedLulcSavePath $"(simulated_lulc_save_path)";
 
                         @viewer.resultingLanscape = yes
                         allocateTransitions1454 := AllocateTransitions {
@@ -210,7 +228,8 @@ Script {{
                             printTransitionInfo = .yes
                         };
 
-                        simulatedLulcYear := ExtractStructString createSimulatedLulcSavePath $"(Simulated_LULC_year)";
+                        @viewer.string = yes
+                        simulatedLulcSavePath := ExtractStructString modifySimulatedLulcSavePath $"(simulated_lulc_save_path)";
 
                         // Simulated LULC map saved at every time step. Receives time info from control 
                         // operator and adds a suffix to the file path. 
@@ -224,17 +243,19 @@ Script {{
                             workdir = workdir,
                             ignoreCostlySparseCategories = .yes
                         };
+
+                        simulatedLulcYear := ExtractStructString modifySimulatedLulcSavePath $"(Simulated_LULC_year)";
                     }};
 
                     @alias = Implement deterministic transitions
                     _ := Group .none {{
                         @collapsed = no
-                        deterministicTransitions := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCBpbXBsZW1lbnRpbmcgRGV0ZXJtaW5pc3RpYyB0cmFuc2l0aW9ucwojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgaW5mb3JtYXRpb24gZnJvbSBEaW5hbWljYQojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI1JlY2VpdmUgZmlsZSBwYXRoIGZvciBsb2FkaW5nIHNpbXVsYXRlZCBMVUxDIG1hcHMKRmlsZV9wYXRoX3NpbXVsYXRlZF9MVUxDX21hcHMgPC0gczEKCiNyZWNlaXZlIHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMyCgojUmVjZWl2ZSBjdXJyZW50IHNpbXVsYXRpb24gdGltZQpTaW11bGF0ZWRfbHVsY195ZWFyIDwtIHMzCgojY29udHJvbCB0YWJsZSBwYXRoCkNvbnRyb2xfdGFibGVfcGF0aCA8LSBzNAoKI3NpbXVsYXRpb24gbnVtYmVyIGJlaW5nIHBlcmZvcm1lZApTaW11bGF0aW9uX251bSA8LSB2MgoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX2RldGVybWluaXN0aWNfdHJhbnMuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBvdXRwdXQgdG8gRGluYW1pY2EKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNzZW5kIGZpbGUgcGF0aCB0byBkaW5hbWljYQpvdXRwdXRTdHJpbmcoInVwZGF0ZWRfbHVsY19tYXBfcGF0aCIsIEZpbGVfcGF0aF9zaW11bGF0ZWRfTFVMQ19tYXBzKQo=" .no {{
-                            @alias = Simulated LULC save path
-                            NumberString simulatedLulcSavePath 1;
-
+                        deterministicTransitions := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCBpbXBsZW1lbnRpbmcgRGV0ZXJtaW5pc3RpYyB0cmFuc2l0aW9ucwojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgaW5mb3JtYXRpb24gZnJvbSBEaW5hbWljYQojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI3JlY2VpdmUgYW5kIHNldCB3b3JraW5nIGRpcmVjdG9yeQp3cGF0aCA8LSBzMQpzZXR3ZCh3cGF0aCkKCiNSZWNlaXZlIGZpbGUgcGF0aCBmb3IgbG9hZGluZyBzaW11bGF0ZWQgTFVMQyBtYXBzCkZpbGVfcGF0aF9zaW11bGF0ZWRfTFVMQ19tYXBzIDwtIHMyCgoKI1JlY2VpdmUgY3VycmVudCBzaW11bGF0aW9uIHRpbWUKU2ltdWxhdGVkX2x1bGNfeWVhciA8LSBzMwoKI2NvbnRyb2wgdGFibGUgcGF0aApDb250cm9sX3RhYmxlX3BhdGggPC0gczQKCiNzaW11bGF0aW9uIG51bWJlciBiZWluZyBwZXJmb3JtZWQKU2ltdWxhdGlvbl9udW0gPC0gdjIKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBzb3VyY2UgUiBzY3JpcHQgZm9yIGdldHRpbmcgRW52aXJvbm1lbnRhbCB2YXJpYWJsZXMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV9nZXRfZW52X3ZhcnMuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUsCgkJCQlsb2NhbCA9IGVudmlyb25tZW50KCkpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfZGV0ZXJtaW5pc3RpY190cmFucy5SIiwKCQkJCWVjaG89VFJVRSwKCQkJCXZlcmJvc2U9VFJVRSwKCQkJCWxvY2FsID0gZW52aXJvbm1lbnQoKSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIG91dHB1dCB0byBEaW5hbWljYQojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKI3NlbmQgZmlsZSBwYXRoIHRvIGRpbmFtaWNhCm91dHB1dFN0cmluZygidXBkYXRlZF9sdWxjX21hcF9wYXRoIiwgRmlsZV9wYXRoX3NpbXVsYXRlZF9MVUxDX21hcHMpCg==" .no {{
                             @alias = Working directory
-                            NumberString workingDirectory 2;
+                            NumberString workingDirectory 1;
+
+                            @alias = Simulated LULC save path
+                            NumberString simulatedLulcSavePath 2;
 
                             @alias = Simulated LULC year
                             NumberString simulatedLulcYear 3;
@@ -269,9 +290,9 @@ Script {{
                 @alias = Calibration period validation
                 _ := Group scenarioTimeStepIteration {{
                     @collapsed = no
-                    calculateRexpression2508 := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBkZXRybWluZSBjb25kaXRpb24gZm9yICdpZiBlbHNlJyBmdW5jdGlvbiB0byBwZXJmb3JtIAojIyB2YWxpZGF0aW9uIG9mIHNpbXVsYXRpb24gcmVzdWx0cwojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgaW5mbyBmcm9tIERpbmFtaWNhCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojcmVjZWl2ZSB3b3JraW5nIGRpcmVjdG9yeQp3cGF0aCA8LSBzNAoKI3JlY2VpdmUgdGFibGUgb2Ygc2ltdWxhdGlvbiB0aW1lIHN0ZXBzClNpbXVsYXRpb25fdGltZV9zdGVwcyA8LSB0MQojU2ltdWx0YXRpb25fdGltZV9zdGVwcyA8LSBhcy5kYXRhLmZyYW1lKG1vZGVsX3RpbWVfc3RlcHMpCgojcmVjZWl2ZSBmaWxlIHBhdGggb2Ygc2ltdWxhdGVkIExVTEMgbWFwcyBmb3IgdGhpcyBzaW11bGF0aW9uClNpbV9MVUxDX3BhdGhfZ2VuIDwtIHMxCgojcmVjZWl2ZSBzdHJpbmcgb2YgTW9kZWwgbW9kZQpNb2RlbF9tb2RlIDwtIHMyCiNNb2RlbF9tb2RlIDwtICJjYWxpYnJhdGlvbiIKCiNyZWNlaXZlIHNpbXVsYXRpb24gSUQKU2ltX0lEIDwtIHMzCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfdXNlX3ZhbGlkYXRpb24uUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU2VuZCBEaW5hbWljYSBvdXRwdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgojb3V0cHV0IHZhbGlkYXRpb24gY29uZGl0aW9uCm91dHB1dERvdWJsZSgiVXNlX3ZhbGlkYXRpb24iLCB2YWxpZGF0aW9uX2NvbmRpdGlvbikgCgojT3V0cHV0IHJlc3VsdCBwYXRocwpvdXRwdXRTdHJpbmcoIlZhbF9tYXBfcGF0aCIsIFZhbGlkYXRpb25fbWFwX3BhdGgpCm91dHB1dFN0cmluZygiVmFsX3Jlc3VsdF9wYXRoIiwgVmFsaWRhdGlvbl9yZXN1bHRfcGF0aCkKCiNvdXRwdXQgZmlsZSBwYXRoIGZvciBvYnNlcnZlZCBtYXAgZm9yIGZpbmFsIExVTEMgeWVhciAKb3V0cHV0U3RyaW5nKCJPYnNfTFVMQ19wYXRoIiwgRmluYWxfTFVMQ19wYXRoKQoKI291dHB1dCBmaWxlIHBhdGggZm9yIHNpbXVsYXRlZCBtYXAgZm9yIGZpbmFsIExVTEMgeWVhcgpvdXRwdXRTdHJpbmcoIlNpbV9MVUxDX3BhdGgiLCBTaW1fZmluYWxfTFVMQ19wYXRoKQoK" .no {{
-                        @alias = Send file path for simulated LULC map
-                        NumberString receiveFilePathForSimulatedLulcMaps 1;
+                    calculateRexpression2508 := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byBkZXRybWluZSBjb25kaXRpb24gZm9yICdpZiBlbHNlJyBmdW5jdGlvbiB0byBwZXJmb3JtIAojIyB2YWxpZGF0aW9uIG9mIHNpbXVsYXRpb24gcmVzdWx0cwojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgaW5mbyBmcm9tIERpbmFtaWNhCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiNyZWNlaXZlIGFuZCBzZXQgd29ya2luZyBkaXJlY3RvcnkKd3BhdGggPC0gczEKc2V0d2Qod3BhdGgpCgojcmVjZWl2ZSB0YWJsZSBvZiBzaW11bGF0aW9uIHRpbWUgc3RlcHMKU2ltdWxhdGlvbl90aW1lX3N0ZXBzIDwtIHQxCiNTaW11bHRhdGlvbl90aW1lX3N0ZXBzIDwtIGFzLmRhdGEuZnJhbWUobW9kZWxfdGltZV9zdGVwcykKCiNyZWNlaXZlIGZpbGUgcGF0aCBvZiBzaW11bGF0ZWQgTFVMQyBtYXBzIGZvciB0aGlzIHNpbXVsYXRpb24KU2ltX0xVTENfcGF0aF9nZW4gPC0gczQKCiNyZWNlaXZlIHN0cmluZyBvZiBNb2RlbCBtb2RlCk1vZGVsX21vZGUgPC0gczIKI01vZGVsX21vZGUgPC0gImNhbGlicmF0aW9uIgoKI3JlY2VpdmUgc2ltdWxhdGlvbiBJRApTaW1fSUQgPC0gczMKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTb3VyY2UgUiBzY3JpcHQKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCnNvdXJjZSgiU2NyaXB0cy9EaW5hbWljYV9pbnRlZ3JhdGlvbi9EaW5hbWljYV91c2VfdmFsaWRhdGlvbi5SIiwKCQkJCWVjaG89VFJVRSwKCQkJCXZlcmJvc2U9VFJVRSwKCQkJCWxvY2FsID0gZW52aXJvbm1lbnQoKSkKCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiMjIyBTZW5kIERpbmFtaWNhIG91dHB1dHMKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiNvdXRwdXQgdmFsaWRhdGlvbiBjb25kaXRpb24Kb3V0cHV0RG91YmxlKCJVc2VfdmFsaWRhdGlvbiIsIHZhbGlkYXRpb25fY29uZGl0aW9uKSAKCiNPdXRwdXQgcmVzdWx0IHBhdGhzCm91dHB1dFN0cmluZygiVmFsX21hcF9wYXRoIiwgVmFsaWRhdGlvbl9tYXBfcGF0aCkKb3V0cHV0U3RyaW5nKCJWYWxfcmVzdWx0X3BhdGgiLCBWYWxpZGF0aW9uX3Jlc3VsdF9wYXRoKQoKI291dHB1dCBmaWxlIHBhdGggZm9yIG9ic2VydmVkIG1hcCBmb3IgZmluYWwgTFVMQyB5ZWFyIApvdXRwdXRTdHJpbmcoIk9ic19MVUxDX3BhdGgiLCBGaW5hbF9MVUxDX3BhdGgpCgojb3V0cHV0IGZpbGUgcGF0aCBmb3Igc2ltdWxhdGVkIG1hcCBmb3IgZmluYWwgTFVMQyB5ZWFyCm91dHB1dFN0cmluZygiU2ltX0xVTENfcGF0aCIsIFNpbV9maW5hbF9MVUxDX3BhdGgpCgo=" .no {{
+                        @alias = working directory
+                        NumberString workingDirectory 1;
 
                         @alias = Send model mode
                         NumberString receiveModelMode 2;
@@ -279,25 +300,25 @@ Script {{
                         @alias = Send simulation ID
                         NumberString receiveSimulationId 3;
 
-                        @alias = working directory
-                        NumberString workingDirectory 4;
+                        @alias = Send file path for simulated LULC map
+                        NumberString receiveFilePathForSimulatedLulcMaps 4;
 
                         @alias = Send table of simulation time steps
                         NumberTable receiveTableOfTimeStepsDefiningLengthOfSimulation 1;
                     }};
 
-                    @viewer.string = yes
-                    receiveFilePathOfObservedLulcMapForLastYearOfSimulation := ExtractStructString calculateRexpression2508 $"(Obs_LULC_path)";
+                    receiveValidationMapSavePath := ExtractStructString calculateRexpression2508 $"(Val_map_path)";
 
                     receiveValidationResultSavePath := ExtractStructString calculateRexpression2508 $"(Val_result_path)";
 
-                    receiveFilePathOfSimulatedLulcMap := ExtractStructString calculateRexpression2508 $"(Sim_LULC_path)";
+                    @viewer.string = yes
+                    receiveFilePathOfObservedLulcMapForLastYearOfSimulation := ExtractStructString calculateRexpression2508 $"(Obs_LULC_path)";
 
                     // returning 0 does not initiate validation, returning 1 does 
                     @viewer.number = yes
                     ifThenCondition := ExtractStructNumber calculateRexpression2508 $"(Use_validation)";
 
-                    receiveValidationMapSavePath := ExtractStructString calculateRexpression2508 $"(Val_map_path)";
+                    receiveFilePathOfSimulatedLulcMap := ExtractStructString calculateRexpression2508 $"(Sim_LULC_path)";
 
                     _ := IfThen ifThenCondition .none {{
                         loadObservedLulcMapForFinalYearOfSimulation := LoadCategoricalMap {
@@ -361,15 +382,19 @@ Script {{
                 }};
             }};
 
+            @collapsed = no
             @alias = Update control table to reflect simulation complete
             _ := Group .none {{
                 @collapsed = no
-                _ := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byB1cGRhdGUgdGhlIGNvbnRyb2wgdGFibGUgYWZ0ZXIgY29tcGxldGlvbiBvZiBzaW11bGF0aW9uIAojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgRGluYW1pY2EgaW5wdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojcmVjZWl2ZSBmaWxlIHBhdGggZm9yIGNvbnRyb2wgdGFibGUgCkNvbnRyb2xfdGFibGVfcGF0aCA8LSBzMQoKI3JlY2VpdmUgQm9vbGVhbiB2YWx1ZSBvZiB3aGV0aGVyIHNpbXVsYXRpb24gd2FzIGNvbXBsZXRlZCBzdWNjZXNzZnVsbHkKU3VjY2VzcyA8LSBzMgpjYXQoU3VjY2VzcykKCiNyZWNlaXZlIHJvdyBudW1iZXIgb2YgY3VycmVudCBzaW11bGF0aW9uClNpbXVsYXRpb25fbnVtIDwtIHYxCiNTaW11bGF0aW9uX251bSA8LSAxCgojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQojIyMgU291cmNlIFIgc2NyaXB0CiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpzb3VyY2UoIlNjcmlwdHMvRGluYW1pY2FfaW50ZWdyYXRpb24vRGluYW1pY2FfdXBkYXRlX2NvbnRyb2xfdGFibGUuUiIsCgkJCQllY2hvPVRSVUUsCgkJCQl2ZXJib3NlPVRSVUUpCgoKCgo=" .no {{
-                    @alias = Control table path
-                    NumberString simulationControlTablePath 1;
+                _ := CalculateRExpression "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMgU291cmNlIHNjcmlwdCB0byB1cGRhdGUgdGhlIGNvbnRyb2wgdGFibGUgYWZ0ZXIgY29tcGxldGlvbiBvZiBzaW11bGF0aW9uIAojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFJlY2VpdmUgRGluYW1pY2EgaW5wdXRzCiMjIyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgojcmVjZWl2ZSBhbmQgc2V0IHdvcmtpbmcgZGlyZWN0b3J5CndwYXRoIDwtIHMxCnNldHdkKHdwYXRoKQoKI3JlY2VpdmUgZmlsZSBwYXRoIGZvciBjb250cm9sIHRhYmxlIApDb250cm9sX3RhYmxlX3BhdGggPC0gczMKCiNyZWNlaXZlIEJvb2xlYW4gdmFsdWUgb2Ygd2hldGhlciBzaW11bGF0aW9uIHdhcyBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5ClN1Y2Nlc3MgPC0gczIKY2F0KFN1Y2Nlc3MpCgojcmVjZWl2ZSByb3cgbnVtYmVyIG9mIGN1cnJlbnQgc2ltdWxhdGlvbgpTaW11bGF0aW9uX251bSA8LSB2MQojU2ltdWxhdGlvbl9udW0gPC0gMQoKIyMjID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIyMjIFNvdXJjZSBSIHNjcmlwdAojIyMgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKc291cmNlKCJTY3JpcHRzL0RpbmFtaWNhX2ludGVncmF0aW9uL0RpbmFtaWNhX3VwZGF0ZV9jb250cm9sX3RhYmxlLlIiLAoJCQkJZWNobz1UUlVFLAoJCQkJdmVyYm9zZT1UUlVFLAoJCQkJbG9jYWwgPSBlbnZpcm9ubWVudCgpKQoKCgoK" .no {{
+                    @alias = Working directory
+                    NumberString workingDirectory 1;
 
                     @alias = Completion boolean
                     NumberString skipOnError1399 2;
+
+                    @alias = Control table path
+                    NumberString simulationControlTablePath 3;
 
                     @alias = Simulation number
                     NumberValue simulationNumber 1;

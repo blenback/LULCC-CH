@@ -1,0 +1,9 @@
+
+For Spatial Zoning Intervention in SS1 instead of the 20% Patcher discussed I used 15% because some of the transitions were already close to 205% anyway:
+From	To	Patcher %
+15	10	0.20749967456967555
+17	10	0.26609583700405914
+18	10	0.14495987752247175
+
+
+

@@ -1,4 +1,2 @@
-﻿Data_period_name,Gen_model_tag,Detail_model_tag,Model_type,Model_scale,Feature_selection_employed,Balance_adjustment,Nhood_extent,Modelling_completed
-1985_1997,rf_regionalized_filtered,Period_1985_1997.rf_regionalized_filtered.downsampled,rf,regionalized,TRUE,TRUE,na,Y
-1997_2009,rf_regionalized_filtered,Period_1997_2009.rf_regionalized_filtered.downsampled,rf,regionalized,TRUE,TRUE,na,Y
+Data_period_name,Gen_model_tag,Detail_model_tag,Model_type,Model_scale,Feature_selection_employed,Balance_adjustment,Nhood_extent,Modelling_completed
 2009_2018,rf_regionalized_filtered,Period_2009_2018.rf_regionalized_filtered.downsampled,rf,regionalized,TRUE,TRUE,na,Y

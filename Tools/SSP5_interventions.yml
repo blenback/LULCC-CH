@@ -1,0 +1,350 @@
+# =============================================================================
+# Intervention Configuration File
+# This file defines the sequence of interventions
+# used for the scenario (in file name). Each intervention is applied at a specific
+# stage to different effects:
+#
+# - Pre-allocation: modifies Dinamica EGO's allocation algorithm parameters
+#
+# - Allocation: modifies probabilities of lulc class transitions according to
+# defined spatial intervention areas.
+#
+# - Post-allocation: directly modifies the final land-use/land-cover map
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# General Keys:
+#
+# - Intervention_stage: 
+#     Indicates when the intervention is applied during the modeling pipeline.
+#     Can be "Pre-allocation" (spatial configuration adjustments),
+#     "Allocation" (probability adjustments) or "Post-allocation" 
+#     (direct modification to simulated lulc map).
+#
+# - Intervention_ID:
+#     Unique name/identifier for the intervention type.
+#
+# - Time_steps_implemented:
+#     List of simulation years when the intervention is active.
+#
+# - Transition_target_classes:
+#     Target land-use/land-cover (LULC) classes affected by the intervention.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-allocation-specific keys:
+#
+# - Param_adjust_type:
+#     Type of spatial patch adjustment. Usually "Absolute".
+#
+# - Param_adjust_name:
+#     Specific spatial configuration parameter to modify.
+#     Options:
+#       - Mean_Patch_Size: average size of land-use patches
+#       - Patch_Size_Variance: variation in patch sizes
+#       - Patch_Isometry: patch shape complexity
+#       - Perc_expander: tendency for patch expansion
+#       - Perc_patcher: tendency for patch filling/patch cohesion
+#
+# - Param_adjust_value:
+#     The absolute value by which the selected parameter is adjusted.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Allocation-specific keys:
+#
+# - Intervention_ranking:
+#     Determines the order of execution if multiple interventions exist
+#     within the same stage. Lower = higher priority.
+#
+# - Prob_adjust_type:
+#     Defines how probability is adjusted:
+#       - "Absolute": sets probability to a specific value
+#       - "Relative": modifies probability based on percentiles
+#
+# - Prob_adjust_valency:
+#     (For relative adjustments) Indicates whether to increase, decrease, or
+#     do both (e.g., "Increase_inside_decrease_outside").
+#
+# - Prob_adjust_intervention_percentile:
+#     Percentile threshold for the intervention cells used to adjust transition probability.
+#
+# - Prob_adjust_non_intervention_percentile:
+#     Percentile threshold for the non-intervention used to adjust transition probability.
+#
+# - Prob_adjust_threshold:
+#     Minimum probability value for adjustment to occur.
+#
+# - Prob_adjust_zone:
+#     Determines which cells are identified as the intewrvention cells:
+#       - "Inside": cells identified within the masked area
+#       - "Outside": cells identified outside the masked area
+#
+# - Mask_type:
+#     Defines how the mask is used. Usually "Static" (does not change over time).
+#
+# - Intervention_mask:
+#     Path to the spatial raster file defining the zone of intervention.
+#
+# - From_lulc_filter:
+#     (Optional) Restricts the selection of intervention cells to those that
+#     are currently specific land-use transitions.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# COnservation intervention specific keys:
+#
+# - Ca_expansion_target: target for the % area of coverage for conservation areas to be expanded too (i.e. 30%)
+#     This is the target for the entire simulation period, not per time step.
+#
+# - Ca_prioritization: On what basis should new conservation areas be prioritized?
+#   options are: Biodiversity, NCPs, Cultural, Agricultural unproductive
+#
+# - Ca_patch_preference: Preference what types of patches should be prioritized
+#   when identifying new conservation areas, options are: Large_patches, Small_patches, Connectivity 
+#
+# - Ca_expansion_rate: What should be the rate at which new conservation areas 
+#   are established over time, options are: Rapid, Steady, Lagged
+#
+# - Ca_expansion_end_year: Final year by which all new conservation areas should
+#    be added to the mask e.g. 2030
+#
+# - Ca_types: Used to define the conservation areas that are included in the mask
+#   whether or not the intervention involves any expansion, options are:
+#   Ramsar, Swiss_National_Park, Unesco_BiosphereReserve, Unesco_NaturalSites,
+#   ProNatura_reserves, Emeraude, Amphibian_spawning, Bird_reserves, PA_cantons,
+#   Dry_pastures, Dry_pastures_appendix2, Fens, Floodplains, Floodplains_appendix2,
+#   Forest_reserves, Hunting_areas, Raised_bog, Biodiversity_promotion_areas
+#
+# =============================================================================
+
+- Intervention_stage: Pre-allocation
+  Intervention_ID: Spatial_zoning
+  Intervention_ranking: ~
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes: Urban
+  Param_adjust_type: Absolute
+  Param_adjust_name: Perc_patcher
+  Param_adjust_value: 0
+- Intervention_stage: Allocation
+  Intervention_ID: Urban_sprawl
+  Intervention_ranking: 1
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes: Urban
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: Increase
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Outside
+  Mask_type: Static
+  Intervention_mask: Data/Spat_prob_perturb_layers/Bulding_zones/BZ_raster.grd
+- Intervention_stage: Allocation
+  Intervention_ID: Mountain_development
+  Intervention_ranking: 5
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes: Urban
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: Increase
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Inside
+  Mask_type: Static
+  Intervention_mask: Data/Spat_prob_perturb_layers/Municipality_typology/Muni_mountain_raster.tif
+- Intervention_stage: Allocation
+  Intervention_ID: Rural_migration
+  Intervention_ranking: 4
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+  Transition_target_classes: Urban
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: Increase
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Inside
+  Mask_type: Static
+  Intervention_mask: Data/Spat_prob_perturb_layers/Municipality_typology/Muni_rural_raster.tif
+- Intervention_stage: Allocation
+  Intervention_ID: Agri_abandonment
+  Intervention_ranking: 2
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+  Transition_target_classes:
+    - Shrubland
+    - Open_Forest
+    - Grassland
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: Increase_inside_decrease_outside
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Inside
+  Mask_type: Static
+  From_lulc_filter:
+    - Alp_Past
+    - Int_AG
+  Intervention_mask: Data/Spat_prob_perturb_layers/Land_marginality/Marginality_raster.tif
+- Intervention_stage: Allocation
+  Intervention_ID: Agri_expansion
+  Intervention_ranking: 2
+  Time_steps_implemented:
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes: Int_AG
+  Prob_adjust_type: Absolute
+  Prob_adjust_value: 100
+  Mask_type: Static
+  From_lulc_filter: Urban
+  Intervention_mask: Data/Spat_prob_perturb_layers/Land_marginality/Marginality_raster_urban_centers_masked.tif
+- Intervention_stage: Allocation
+  Intervention_ID: Agri_maintenance
+  Intervention_ranking: 2
+  Time_steps_implemented:
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes:
+    - Shrubland
+    - Open_Forest
+    - Grassland
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: decrease
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Inside
+  Mask_type: Static
+  From_lulc_filter:
+    - Alp_Past
+    - Int_AG
+  Intervention_mask: Data/Spat_prob_perturb_layers/Land_marginality/Marginality_raster.tif
+- Intervention_stage: Allocation
+  Intervention_ID: ineffective_conservation
+  Intervention_ranking: 5
+  Time_steps_implemented:
+    - 2020
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+    - 2055
+    - 2060
+    - 2065
+    - 2070
+    - 2075
+    - 2080
+    - 2085
+    - 2090
+    - 2095
+    - 2100
+  Transition_target_classes:
+    - Urban
+    - Int_AG
+    - Perm_crops
+  Prob_adjust_type: Relative
+  Prob_adjust_valency: Increase
+  Prob_adjust_intervention_percentile: 90
+  Prob_adjust_non_intervention_percentile: 90
+  Prob_adjust_threshold: 5
+  Prob_adjust_zone: Inside
+  Mask_type: Static
+  Ca_types:
+    - Ramsar
+    - Swiss_National_Park
+    - Unesco_BiosphereReserve
+    - Unesco_NaturalSites
+    - ProNatura_reserves
+    - Emeraude
+    - Amphibian_spawning
+    - Bird_reserves
+    - PA_cantons
+    - Dry_pastures
+    - Dry_pastures_appendix2
+    - Fens
+    - Floodplains
+    - Floodplains_appendix2
+    - Forest_reserves
+    - Hunting_areas
+    - Raised_bog
+    - Biodiversity_promotion_areas
+  Intervention_mask: Data/Spat_prob_perturb_layers/Protected_areas/Simulation_PAs/SSP5/SSP5_ineffective_conservation_mask.tif
+

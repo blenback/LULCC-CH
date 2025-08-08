@@ -14,6 +14,6 @@ files = glob.glob(full_filename_pattern, recursive=recurse_subfolders)
 # sort files alphabetically
 files = sorted(files)
 files = [["Indices*#real", "Filenames#string"]] + list(enumerate(files, 1))
-print("Prepared output for Dinamica: ", files)
+# print("Prepared output for Dinamica: ", files)
 
 dinamica.outputs["files"] = dinamica.prepareTable(files, 1)

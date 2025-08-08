@@ -25,17 +25,20 @@
 #install.packages(packageurl, repos=NULL, type="source")
 
 #vector other required packages
-# packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel",
-# "sf", "tiff", "igraph", "readr", "foreach", "testthat",
-# "sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal",
-# "rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr",
-# "stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R",
-# "rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
-# "gdata", "landscapemetrics", "randomForest", "RRF", "future.callr",
-# "ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica",
-# "gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
-# "ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi", "landscapemetrics")
-packs <- c("stringr", "xlsx", "openxlsx", "readxl")
+packs<-c("data.table", "raster", "tidyverse", "SDMTools", "doParallel",
+"sf", "tiff", "igraph", "readr", "foreach", "testthat",
+"sjmisc", "tictoc", "parallel", "terra", "pbapply", "rgdal",
+"rgeos", "bfsMaps", "rjstat", "future.apply", "future", "stringr",
+"stringi", "readxl", "rlist", "rstatix", "openxlsx", "pxR", "zen4R",
+"rvest", "viridis", "sp", "jsonlite", "httr", "xlsx", "callr",
+"gdata", "landscapemetrics", "randomForest", "RRF", "future.callr",
+"ghibli", "ggpattern", "butcher", "ROCR", "ecospat", "caret", "Dinamica",
+"gridExtra", "extrafont", "ggpubr", "ggstatsplot","PMCMRplus", "reshape2",
+"ggsignif", "ggthemes", "ggside", "gridtext", "grid", "rstudioapi",
+"landscapemetrics", "lpSolve", "yaml", "biogrowth")
+# packs <- c("stringr", "xlsx", "openxlsx", "readxl", "raster", "data.table",
+#            "pxR", "BFS", "future", "future.apply", "terra", "ggplot2",
+#            "tidyterra", "zoo", "tidyr", "dplyr", "testthat", "sjmisc", "lpSolve")
 
 #install new packages
 new.packs <- packs[!(packs %in% installed.packages()[, "Package"])]
@@ -78,7 +81,7 @@ invisible(sapply(list.files("Scripts/Functions",
 
 #User enter scenario names to model 
 #vector abbreviations of scenario's for folder/file naming
-Scenario_names <- c("BAU", "EI-NAT", "EI-CUL", "EI-SOC", "GR-EX")
+Scenario_names <- c("SSP0", "SSP1", "SSP3", "SSP4", "SSP5")
 
 #User enter start and end dates for the scenarios either enter a single number
 #value or a vector of values the same length as the number of scenarios earliest
@@ -86,7 +89,7 @@ Scenario_names <- c("BAU", "EI-NAT", "EI-CUL", "EI-SOC", "GR-EX")
 #2020 and we have initially agreed to use 5 year time steps
 
 Scenario_start <- 2020
-Scenario_end <- 2060
+Scenario_end <- 2100
 Step_length <- 5
 
 #User enter number of runs to perform for each simulation
@@ -158,12 +161,12 @@ if (dir.exists(Sim_log_dir) == FALSE) {dir.create(Sim_log_dir, recursive = TRUE)
 
 #list objects required for modelling
 Model_tool_vars <- list(LULC_aggregation_path = "Tools/LULC_class_aggregation.xlsx", #Path to LULC class aggregation table
-                        Model_specs_path = "Tools/Model_specs.xlsx", #Path to model specifications table
+                        Model_specs_path = "Tools/Model_specs.csv", #Path to model specifications table
                         Param_grid_path = "Tools/param-grid.xlsx", #Path to model hyper parameter grids
                         Pred_table_path = "Tools/Predictor_table.xlsx", #Path to predictor table
                         Spat_ints_path = "Tools/Spatial_interventions.csv", #Path to spatial interventions table
                         EI_ints_path = "Tools/EI_interventions.csv" , #Path to EI interventions table
-                        Ref_grid_path = "Data/Ref_grid.gri",#Path to spatial grid to standardise spatial data
+                        Ref_grid_path = "Data/Ref_grid.grd",#Path to spatial grid to standardise spatial data
                         Calibration_param_dir = "Data/Allocation_parameters/Calibration",
                         Simulation_param_dir = "Data/Allocation_parameters/Simulation",
                         Trans_rate_table_dir = "Data/Transition_tables/prepared_trans_tables",
@@ -207,84 +210,84 @@ list2env(Model_tool_vars, scripting_env)
 #downloads
 
 #connect to Zenodo API
-zenodo <- ZenodoManager$new()
+#zenodo <- ZenodoManager$new()
 
 #Get record info
 #TO DO: won't work until record is made open access
-rec <- zenodo$getRecordByDOI("10.5281/zenodo.7590103")
-files <- rec$listFiles(pretty = TRUE)
-files <- my_rec$listFiles(pretty = TRUE)
+#rec <- zenodo$getRecordByDOI("10.5281/zenodo.7590103")
+#files <- rec$listFiles(pretty = TRUE)
+#files <- my_rec$listFiles(pretty = TRUE)
 
 #increase timeout limit for downloading file
-options(timeout=6000)
+#options(timeout=6000)
 
 #create a temporary directory to store the zipped file
-tmpdir <- tempdir()
+#tmpdir <- tempdir()
 
 #Download to tmpdir
-my_rec$downloadFiles(path = tmpdir)
-download.file(files$download, paste0(tmpdir, "/", files$filename), mode = "wb")
+#my_rec$downloadFiles(path = tmpdir)
+#download.file(files$download, paste0(tmpdir, "/", files$filename), mode = "wb")
 
 #unzip (this can be temperamental may need to manually unzip)
 #function for unzipping large files using system
-decompress_file <- function(directory, file, .file_cache = FALSE) {
+# decompress_file <- function(directory, file, .file_cache = FALSE) {
+# 
+#     if (.file_cache == TRUE) {
+#        print("decompression skipped")
+#     } else {
+# 
+#       # Set working directory for decompression
+#       # simplifies unzip directory location behavior
+#       wd <- getwd()
+#       setwd(directory)
+# 
+#       # Run decompression
+#       decompression <-
+#         system2("unzip",
+#                 args = c("-o", # include override flag
+#                          file),
+#                 stdout = TRUE)
+# 
+#       # uncomment to delete archive once decompressed
+#       # file.remove(file)
+# 
+#       # Reset working directory
+#       setwd(wd); rm(wd)
+# 
+#       # Test for success criteria
+#       # change the search depending on
+#       # your implementation
+#       if (grepl("Warning message", tail(decompression, 1))) {
+#         print(decompression)
+#       }
+#     }
+# }
 
-    if (.file_cache == TRUE) {
-       print("decompression skipped")
-    } else {
-
-      # Set working directory for decompression
-      # simplifies unzip directory location behavior
-      wd <- getwd()
-      setwd(directory)
-
-      # Run decompression
-      decompression <-
-        system2("unzip",
-                args = c("-o", # include override flag
-                         file),
-                stdout = TRUE)
-
-      # uncomment to delete archive once decompressed
-      # file.remove(file)
-
-      # Reset working directory
-      setwd(wd); rm(wd)
-
-      # Test for success criteria
-      # change the search depending on
-      # your implementation
-      if (grepl("Warning message", tail(decompression, 1))) {
-        print(decompression)
-      }
-    }
-}
-
-#using function
-decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache = FALSE)
-
-#using r utils::unzip
-unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip"))
-
-#TO DO: update path when Manuel has finished Zenodo upload.
-#select just the raw data
-raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data/Raw")
-
-#Move files into project structure
-file.copy(raw_data_path, "Data/Preds", recursive=TRUE)
-
-#remove the zipped folder in temp dir
-unlink(paste0(tmpdir, "/", files$filename))
+# #using function
+# decompress_file(tmpdir, file = paste0(tmpdir, "\\", files$filename), .file_cache = FALSE)
+# 
+# #using r utils::unzip
+# unzip(paste0(tmpdir, "/", files$filename), exdir = str_remove(paste0(tmpdir, "/", files$filename), ".zip"))
+# 
+# #TO DO: update path when Manuel has finished Zenodo upload.
+# #select just the raw data
+# raw_data_path <- str_replace(paste0(tmpdir, "/", files$filename), ".zip", "/Data/Raw")
+# 
+# #Move files into project structure
+# file.copy(raw_data_path, "Data/Preds", recursive=TRUE)
+# 
+# #remove the zipped folder in temp dir
+# unlink(paste0(tmpdir, "/", files$filename))
 
 ### =========================================================================
 ### A- Prepare LULC/region data
 ### =========================================================================
 
 #Prepare LULC data layers
-source("Scripts/Preparation/LULC_data_prep.R", local = scripting_env)
+#source("Scripts/Preparation/LULC_data_prep.R", local = scripting_env)
 
 #Prepare raster of Swiss Bioregions
-source("Scripts/Preparation/Region_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Region_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### B- Prepare predictor data
@@ -295,33 +298,31 @@ source("Scripts/Preparation/Region_prep.R", local = scripting_env)
 #when data layers are created
 
 #Prepare suitability and accessibility predictors
-source("Scripts/Preparation/Calibration_predictor_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Calibration_predictor_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### C- Identify LULC transitions and create transition datasets
 ### =========================================================================
 
-source("Scripts/Preparation/Transition_identification.R", local = scripting_env)
+#source("Scripts/Preparation/Transition_identification.R", local = scripting_env)
 
 ### =========================================================================
 ### D- Create transition datasets
 ### =========================================================================
 
-source("Scripts/Preparation/Transition_dataset_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Transition_dataset_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### E- Predictor variable selection on LULCC transition datasets
 ### =========================================================================
 
-source("Scripts/Preparation/Transition_feature_selection.R", local = scripting_env)
+#source("Scripts/Preparation/Transition_feature_selection.R", local = scripting_env)
 
 ### =========================================================================
 ### F- Statistical modelling of LULCC transition datasets
 ### =========================================================================
 
-#TO DO: USER CREATE TABLE OF MODEL SPECIFCATIONS AND PARAM GRID TO BE TESTED
-
-source("Scripts/Preparation/Trans_modelling.R", local = scripting_env)
+#source("Scripts/Preparation/Trans_modelling.R", local = scripting_env)
 
 ### =========================================================================
 ### G- Summarizing model validation results
@@ -330,41 +331,41 @@ source("Scripts/Preparation/Trans_modelling.R", local = scripting_env)
 #The results comparing the performance of different transition model
 #specifications require manual interpretation as the choice of optimal model
 #must balance numerous aspects: accuracy, overfitting, computation time etc.
-source("Scripts/Preparation/Transition_model_evaluation.R", local = scripting_env)
+#source("Scripts/Preparation/Transition_model_evaluation.R", local = scripting_env)
 
-#Enter choice of optimal model specifcations
-#Model_type <- "rf"
-#Model_scale <- "regionalized"
-#Feature_selection_employed <- "TRUE"
-#Balance_adjustment <- "TRUE"
-
-#adjust contents of model_specs table to only optimal specifcations
-lulcc.finalisemodelspecifications(Model_specs_path = Model_specs_path,
-                                  Param_grid_path = Param_grid_path)
+# #Enter choice of optimal model specifcations
+# Model_type <- "rf"
+# Model_scale <- "regionalized"
+# Feature_selection_employed <- "TRUE"
+# Balance_adjustment <- "TRUE"
+# 
+# #adjust contents of model_specs table to only optimal specifcations
+# lulcc.finalisemodelspecifications(Model_specs_path = Model_specs_path,
+#                                   Param_grid_path = Param_grid_path)
 
 ### =========================================================================
 ### H- Re-fitting optimal model specifications on full data
 ### =========================================================================
 
-source("Scripts/Preparation/Trans_model_finalization.R", local = scripting_env)
+#source("Scripts/Preparation/Trans_model_finalization.R", local = scripting_env)
 
 ### =========================================================================
 ### I- Prepare data for deterministic transitions (e.g glacier -> Non-glacier)
 ### =========================================================================
 
-source("Scripts/Preparation/Deterministic_trans_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Deterministic_trans_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### I- Prepare tables of transition rates for scenarios
 ### =========================================================================
 
-source("Scripts/Preparation/Simulation_trans_tables_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Simulation_trans_tables_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### J- Prepare predictor data for scenarios
 ### =========================================================================
 
-source("Scripts/Preparation/Simulation_predictor_prep.R", local = scripting_env)
+#source("Scripts/Preparation/Simulation_predictor_prep.R", local = scripting_env)
 
 ### =========================================================================
 ### K- Calibrate allocation parameters for Dinamica
@@ -376,7 +377,7 @@ source("Scripts/Preparation/Simulation_predictor_prep.R", local = scripting_env)
 #3. Identify best performing parameter sets and save copies of tables
 #to be used in scenario simulations
 
-source("Scripts/Preparation/Calibrate_allocation_parameters.R", local = scripting_env)
+#source("Scripts/Preparation/Calibrate_allocation_parameters.R", local = scripting_env)
 
 ### =========================================================================
 ### L- Prepare scenario specific spatial interventions
