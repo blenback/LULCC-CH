@@ -125,6 +125,12 @@ stop("Differences in Raster characteristics means they are unsuitable for stacki
 refer to object Raster_comparison_results to locate problems")
 }
 
+# create a nested dir for saving pred raster stacks too
+Pred_stack_dir <- "Data/Preds/Prepared/Stacks/Calibration"
+if(!dir.exists(Pred_stack_dir)){
+  dir.create(Pred_stack_dir, recursive = TRUE)
+}
+
 #creating raster stacks of all predictors and LULC data for each time period
 Rasterstacks_by_periods <- mapply(function(Raster_list, Period_name){
 raster_stack_for_period <- stack(Raster_list)
@@ -145,6 +151,9 @@ rm(Rasters_by_periods)
 future::plan(multisession, workers = availableCores()-2)
 future_lapply(Data_periods, function(period){
 
+# testing the parallelisation
+period <- Data_periods[1]
+  
   #seperate data for period
   period_data <- Rasterstacks_by_periods[[paste(period)]]
 
@@ -191,8 +200,10 @@ future_lapply(Data_periods, function(period){
 
   #Create binarized transition datasets for each transition
   #remove rows with static initial class using key.
-  Trans_data_subset <- Trans_data[Trans_data$Initial_class_lulc_name != "Static",]
-
+  #Trans_data_subset <- Trans_data[Trans_data$Initial_class_lulc_name != "Static",]
+  Trans_data_subset <- Trans_data
+  rm(Trans_data)
+  
   #add a numeric ID for recombining later
   Trans_data_subset$Num_ID <- seq.int(nrow(Trans_data_subset))
 

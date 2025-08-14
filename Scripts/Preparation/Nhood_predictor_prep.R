@@ -30,11 +30,11 @@
 # # Load required packages
 # invisible(lapply(packs, require, character.only = TRUE))
 
-# Source custom functions
-# invisible(sapply(list.files("Scripts/Functions",
-#                             pattern = ".R",
-#                             full.names = TRUE,
-#                             recursive=TRUE), source))
+#Source custom functions
+invisible(sapply(list.files("Scripts/Functions",
+                            pattern = ".R",
+                            full.names = TRUE,
+                            recursive=TRUE), source))
 
 #Historic LULC data folder path
 LULC_folder <- "Data/Historic_LULC"

@@ -38,10 +38,6 @@ LULC_classes$value <- sapply(LULC_classes$label, function(x){unique(Aggregation_
 trans_rates_dir <- "Data/Transition_tables/raw_trans_tables"
 dir.create(trans_rates_dir, recursive = TRUE)
 
-#Vector duration of time steps to be used in modelling
-#Provided from master script
-#Step_length <- 5
-
 ### =========================================================================
 ### B- Calculate historic areal change for LULC classes
 ### =========================================================================
@@ -65,7 +61,7 @@ RAT <- LULC_rasters[["1985"]]@data@attributes[[1]]
 LULC_areal_change$LULC_class <- sapply(LULC_areal_change$value, function(x) RAT[RAT$Pixel_value == x,"lulc_name"]) 
 
 #create workbook to save in
-write.csv(LULC_areal_change, paste0(trans_rates_dir,"/LULC_historic_areal_change.csv"), row.names = FALSE)
+#write.csv(LULC_areal_change, paste0(trans_rates_dir,"/LULC_historic_areal_change.csv"), row.names = FALSE)
 
 ### =========================================================================
 ### C- Preparing Transition tables for each calibration period
@@ -118,7 +114,7 @@ perchange_for_period$'From*' <- as.numeric(as.character(perchange_for_period$'Fr
 perchange_for_period$'To*' <- as.numeric(as.character(perchange_for_period$'To*'))  
 
 #exclude LULC persistences (i.e. non-transitions) 
-perchange_for_period <- perchange_for_period[!perchange_for_period$From == perchange_for_period$To,]
+#perchange_for_period <- perchange_for_period[!perchange_for_period$From == perchange_for_period$To,]
 
 #remove any rows with a value of zero
 perchange_for_period <- perchange_for_period[!perchange_for_period$Rate == 0,]
@@ -127,7 +123,7 @@ perchange_for_period <- perchange_for_period[!perchange_for_period$Rate == 0,]
 perchange_for_period <- perchange_for_period[order(perchange_for_period$From),]
 
 #save this 'single step' transition table
-write_csv(perchange_for_period, paste0(trans_rates_dir, "/Calibration_", period_name, "_singlestep_trans_table.csv"))
+write.csv(perchange_for_period, paste0(trans_rates_dir, "/Calibration_", period_name, "_singlestep_trans_table.csv"))
 
 #Convert to Multistep matrix
 #calculate number of time steps in period
@@ -138,7 +134,7 @@ perchange_for_period_multistep <- perchange_for_period
 perchange_for_period_multistep$Rate <- perchange_for_period_multistep$Rate/Num_steps
 
 #save multi step transition table
-write_csv(perchange_for_period_multistep, paste0(trans_rates_dir,"/Calibration_", period_name, "_multistep_trans_table.csv"))
+write.csv(perchange_for_period_multistep, paste0(trans_rates_dir,"/Calibration_", period_name, "_multistep_trans_table.csv"))
 }
 
 #Run function
@@ -168,18 +164,41 @@ Viable_transitions_by_period_SS <- lapply(Calibration_singlestep_tables, functio
   x$Final_class <- sapply(x$To., function(y) {LULC_classes[LULC_classes$value == y, c("label")]})
   x$Trans_name <- paste(x$Initial_class, x$Final_class, sep = "_")
   
+  #seperate rows where the initial class is Urban and final classes are Int_AG and Shrubland
+  urban_trans <- x[x$Initial_class == "Urban" & (x$Final_class == "Int_AG" | x$Final_class == "Shrubland"),]
+    
+  # remove transtions from static where the final classes are not shrubland or static
+  static_trans <- x[x$Initial_class == "Static" & x$Final_class %in% c("Shrubland", "Static"),]
+    
   #subset by inclusion threshold
   x <- x[x$Rate*100 >= Inclusion_thres,]
   
-  #subset by transitions from static class
-  x <- x[x$Initial_class != "Static",]
+  # remove all other transitions where intial class is Static
+  x <- x[!(x$Initial_class == "Static" & x$Final_class != "Shrubland"),]
   
+  # add back in the SSP relevant urban and static transitions
+  x <- rbind(x, urban_trans, static_trans)
+  
+  # sort by ascending value of From. and To.
+  x <- x[order(x$'From.', x$'To.'), ]
+
+  # add a transition ID column
   x$Trans_ID <- sprintf("%02d", 1:nrow(x))
+  
   return(x)
   })
 
 #save viable transitions lists
-saveRDS(Viable_transitions_by_period_SS, "Tools/Viable_transitions_lists.rds")
+#saveRDS(Viable_transitions_by_period_SS, "Tools/Viable_transitions_lists.rds")
+
+#Viable_transitions_by_period_SS <- readRDS("Tools/Viable_transitions_lists.rds")
+
+# remove any occurences where multiple rows have the same Initial_class and Final_class
+Viable_transitions_by_period_SS <- lapply(Viable_transitions_by_period_SS, function(x){
+  clean <- x[!duplicated(x$Trans_name),]
+})
+
+
 
 ### =========================================================================
 ### D- Combining transition rates tables for calibration periods to use for extrapolation
@@ -193,7 +212,7 @@ Trans_table_time_SS <- pivot_wider(data = Trans_tables_bound_SS, names_from = "P
 #save
 write.csv(Trans_table_time_SS, "Data/Transition_tables/trans_rates_table_calibration_periods_SS.csv")
 
-#Repeat for the multi-step transition matrices
+# #Repeat for the multi-step transition matrices
 
 #Load multi-step net transition tables produced for historic periods
 Calibration_multistep_tables <- lapply(list.files(trans_rates_dir, full.names = TRUE, pattern = "multistep"), read.csv)
@@ -204,10 +223,7 @@ Viable_transitions_by_period_MS <- lapply(Calibration_multistep_tables, function
   x$Initial_class <- sapply(x$From., function(y) {LULC_classes[LULC_classes$value == y, c("label")]})
   x$Final_class <- sapply(x$To., function(y) {LULC_classes[LULC_classes$value == y, c("label")]})
   x$Trans_name <- paste(x$Initial_class, x$Final_class, sep = "_")
-  
-  #subset by transitions from static class
-  x <- x[x$Initial_class != "Static",]
-  
+
   x$Trans_ID <- sprintf("%02d", 1:nrow(x))
   return(x)
   })
@@ -215,20 +231,31 @@ Viable_transitions_by_period_MS <- lapply(Calibration_multistep_tables, function
 #because the same inclusion threshold does not apply to the multi-step rates
 #instead subset by the trans names in the single step equivalent table
 single_step_table <- read.csv("Data/Transition_tables/trans_rates_table_calibration_periods_SS.csv")
-trans_names <- single_step_table[!is.na(single_step_table$X2009_2018), "Trans_name"]
+
+# remove columns X.1 and X
+single_step_table <- single_step_table[, !names(single_step_table) %in% c("X.1", "X")]
+
+# remove X from all column names
+single_step_table <- single_step_table %>% rename_with(~ str_remove(., "^X"), everything())
+
+# remove all rows where From. and To. have the same values
+single_step_table <- single_step_table[single_step_table$From. != single_step_table$To.,]
+
+
+trans_names <- single_step_table[!is.na(single_step_table['2009_2018']), "Trans_name"]
 Viable_transitions_by_period_MS <- lapply(Viable_transitions_by_period_MS, function(x){
-filtered_table <- x[x$Trans_name %in% trans_names,]   
+filtered_table <- x[x$Trans_name %in% trans_names,]
 })
 
 #remove added columns and save as individual csv. files as exemplar trans tables
-#to be loaded into dinamica 
+#to be loaded into dinamica
 mapply(function(trans_table, table_name){
-  
+
   #remove columns
   trans_table[, c("Trans_ID", "Trans_name", "Initial_class", "Final_class")] <- list(NULL)
-  
+
   #save
-  write_csv(trans_table, file= paste0(trans_rates_dir,"/Calibration_", table_name, "_viable_trans.csv"))},
+  write.csv(trans_table, file= paste0(trans_rates_dir,"/Calibration_", table_name, "_viable_trans.csv"))},
          trans_table = Viable_transitions_by_period_MS,
          table_name = names(Viable_transitions_by_period_MS)
   )

@@ -12,7 +12,7 @@
 lulcc.finalisemodelspecifications <- function(Model_specs_path, Param_grid_path){
 
   #Load model specifications
-  model_specs <- read_excel(Model_specs_path)
+  model_specs <- read.csv(Model_specs_path)
 
   #filter for completed model specifcations
   model_specs <- model_specs[model_specs$Modelling_completed == "Y",]

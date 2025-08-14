@@ -39,18 +39,20 @@ dir.create(eval_results_base_folder, recursive = TRUE)
 
 #load table of model specifications
 # Import model specifications table
-model_specs <- read_excel(Model_specs_path)
+model_specs <- read.csv(Model_specs_path)
 
 #Filter for models already completed
-models_specs <- model_specs[model_specs$Modelling_completed == "N",]
+model_specs <- model_specs[model_specs$Modelling_completed == "N",]
 
 #split into named list
-model_list <- lapply(split(models_specs, seq(nrow(models_specs))), as.list)
-names(model_list) <- models_specs$Detail_model_tag
+model_list <- lapply(split(model_specs, seq(nrow(model_specs))), as.list)
+names(model_list) <- model_specs$Detail_model_tag
 
 #Instantiate wrapper function over process of modelling prep, fitting,
 #evaluation, saving and completeness checking
 lulcc.multispectransmodelling <- function(model_specs){
+
+model_specs <- model_list[[1]] #for testing purposes, only run first model spec
 
 ### =========================================================================
 ### A- Prepare model specifications 
@@ -139,6 +141,7 @@ return(Trans_model_capture)
 ) #close loop over trnasition datasets
 plan(sequential)
 
+
 ### =========================================================================
 ### B.3- Update model specification table to reflect that this specification
 ### of models is complete
@@ -150,12 +153,14 @@ Modelling_check <- unlist(Modelling_outputs)
 if(all(Modelling_check == "Success") == TRUE){
   
   #load model spec table and replace the values in the 'Completed' column
-  model_spec_table <- readxl::read_excel(Model_specs_path)
+  model_spec_table <- read.csv(Model_specs_path)
 
   #find the correct row
   model_spec_table$Modelling_completed[model_spec_table$Detail_model_tag == model_specs$Detail_model_tag] <- "Y"
 
-  openxlsx::write.xlsx(model_spec_table, file = Model_specs_path, overwrite = TRUE) 
+  # save the csv
+  write.csv(model_spec_table, file = Model_specs_path, row.names = FALSE, quote = FALSE)
+
 
   cat(paste0('Model fitting and evaluation for:', model_specs$Detail_model_tag, 'completed without errors'))
 } else if(all(Modelling_check == "Success") == FALSE){
@@ -194,6 +199,18 @@ if(all(Modelling_check == "Success") == TRUE){
   saveRDS(Modelling_outputs, paste0(eval_results_folder, model_specs$Detail_model_tag, "_modelling_output_summary.rds"))
 
 }
+
+### =========================================================================
+### B.4- Summarise model evaluation results
+### =========================================================================
+
+# Apply function to summarise model evaluation results
+lulcc.summarisemodelevaluation(eval_results_folder = eval_results_folder,
+                               data_period = Data_period,
+                               model_tag = model_specs$Detail_model_tag,
+                               summary_metrics = c("AUC", "Boyce", "Score"),
+                               plots = TRUE)
+
 
 } #close wrapper function
 

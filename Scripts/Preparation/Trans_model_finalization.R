@@ -49,11 +49,13 @@ names(model_list) <- models_specs$Detail_model_tag
 
 #Instantiate wrapper function over process of modelling prep, fitting,
 #evaluation, saving and completeness checking
-lulcc.multispectransmodelling <- function(model_specs){
+lulcc.multispectransmodelling <- function(model_specs){})
 
 ### =========================================================================
 ### A- Prepare model specifications 
 ### =========================================================================  
+
+#model_specs <- model_list[[1]] #select model specification to run
 
 #vector model specifcations    
 Data_period <- model_specs$Data_period
@@ -163,11 +165,12 @@ lulcc.multispectransmodelling(model)
 ### F- create a model look up table
 ### =========================================================================
 
-Model_periods <- unique(models_specs$Data_period_name)
+Model_periods <- "2009_2018"
 
 #load list of viable transitions for each time period
 Viable_transitions_lists <- readRDS("Tools/Viable_transitions_lists.rds")
-names(Viable_transitions_lists) <- Model_periods
+Viable_transitions_lists <- Viable_transitions_lists[names(Viable_transitions_lists) %in% Model_periods]
+#names(Viable_transitions_lists) <- Model_periods
 
 #create a df with info for each period
 Model_lookups <- lapply(Model_periods, function(x) {
@@ -211,6 +214,7 @@ Model_lookups <- lapply(Model_periods, function(x) {
   return(model_df)
   })
 names(Model_lookups) <- Model_periods
+
 #adding ID column using lists of viable transitions
 Model_lookups_with_ID <- mapply(function(Model_lookup, trans_table){
   Model_lookup$Trans_ID <- sapply(Model_lookup$Trans_name, function(x) trans_table[trans_table$Trans_name == x, "Trans_ID"])
@@ -219,9 +223,15 @@ return(Model_lookup)
 trans_table = Viable_transitions_lists,
 SIMPLIFY = FALSE)
 
+# subset to only the first period (as this is the one used for model look up)
+#Model_lookups_with_ID <- Model_lookups_with_ID[1]
+
 #save DFs for each periods as sheets in a xlsx. 
 unlink("Tools/Model_lookup.xlsx")
+# open work book to edit contents
 mapply(function(model_table, model_name) 
-  xlsx::write.xlsx(model_table, file="Tools/Model_lookup.xlsx", sheet= model_name, row.names=FALSE, append = TRUE),
+  openxlsx::write.xlsx(model_table, file="Tools/Model_lookup.xlsx", sheetName = model_name, overwrite= TRUE),
          model_table = Model_lookups_with_ID,
          model_name = names(Model_lookups_with_ID))
+
+

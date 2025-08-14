@@ -77,6 +77,7 @@ Glacier_indices <- lapply(list.files("Data/Glacial_change/median_scenarios", ful
   
   #subset to simulation years
   Glacier_index_sim <- Glacier_index[,c("ID_loc", Sim_years)]
+
   })
 
 #extract RCP designation between other strings

@@ -42,6 +42,12 @@ absolute_prob_adjust <- function(
     # Replace values in target raster
     Target_layer[ix] <- Target_area[ix]
     
+    # set any values in Target_layer that are greater than 1 to 1
+    Target_layer[Target_layer > 1] <- 1
+    
+    # set any values in Target_layer that are less than 0 to 0 excluding NAs
+    Target_layer[Target_layer < 0 & !is.na(Target_layer)] <- 0
+    
     # Update the Prob_raster_stack with the modified Target_layer
     Prob_raster_stack[[layer_index]] <- Target_layer
   }

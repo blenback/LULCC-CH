@@ -91,6 +91,15 @@ NOAS04_periods_rasters <- mapply(create.reproject.save.raster,
 #18 Permanent crops	
 #19 Glacier	
 
+# load the NOAS04 rasters from disk
+NOAS04_periods_rasters <- list(
+  LULC_1985 = raster("Data/Historic_LULC/NOAS04_LULC/rasterized/NOAS04_1985.tif"),
+  LULC_1997 = raster("Data/Historic_LULC/NOAS04_LULC/rasterized/NOAS04_1997.tif"),
+  LULC_2009 = raster("Data/Historic_LULC/NOAS04_LULC/rasterized/NOAS04_2009.tif"),
+  LULC_2018 = raster("Data/Historic_LULC/NOAS04_LULC/rasterized/NOAS04_2018.tif")
+)
+
+
 #Preparing rasters using a 2 col (initial value, new value) matrix
 
 #load aggregation scheme
@@ -98,6 +107,10 @@ Aggregation_scheme <- read_excel(LULC_aggregation_path)
 
 #subset to just the ID cols
 Agg_matrix <- as.matrix(Aggregation_scheme[,c("NOAS04_ID", "Aggregated_ID")])
+
+# get the IDs where Aggregation_scheme$NOAS04_class_ENG == Lakes or Rivers
+# and set them to NA in the Agg_matrix
+Agg_matrix[Aggregation_scheme$NOAS04_class_ENG %in% c("Lakes", "Rivers"), 2] <- NA
 
 Reclassified_rasters <- lapply(NOAS04_periods_rasters, function(x) reclassify(x, rcl = Agg_matrix))
 names(Reclassified_rasters) <- c("LULC_1985_agg", "LULC_1997_agg", "LULC_2009_agg", "LULC_2018_agg")

@@ -22,7 +22,7 @@
 # invisible(sapply(list.files("Scripts/Functions", pattern = ".R", full.names = TRUE, recursive = TRUE), source))
 
 #Import model specifications table
-model_specs <- read_excel(Model_specs_path)
+model_specs <- read.csv(Model_specs_path)
 
 #Filter for models with feature selection not required
 Filtering_required <- model_specs[model_specs$Feature_selection_employed == "TRUE",]%>%
@@ -79,35 +79,35 @@ names(Data_paths) <- sapply(Data_paths, function(x) basename(x))
 ### B- Stage 1: Collinearity based 'filter' feature selection
 ### =========================================================================
 
-future::plan(multisession(workers = availableCores()-2))
+#future::plan(multisession(workers = availableCores()-2))
 collin_selection_results <- future_lapply(Data_paths, function(z) {
-  
-    gc()  
-    #load dataset
-    Trans_data <- readRDS(z)
 
-    #perform filter based feature selection
-    Collin_filtered_data <- try(lulcc.filtersel(
-    transition_result = Trans_data[["trans_result"]],
-    cov_data = Trans_data[["cov_data"]], 
-    categories =  Predictor_table$CA_category[which(Predictor_table$Covariate_ID %in% names(Trans_data[["cov_data"]]))],
-    collin_weight_vector = Trans_data[["collin_weights"]],
-    embedded_weight_vector = Trans_data[["embed_weights"]],
-    focals= c("Neighbourhood"),
-    method="GLM",
-    corcut=0.7))
-    
+    # gc()
+    # #load dataset
+    # Trans_data <- readRDS(z)
+    # 
+    # #perform filter based feature selection
+    # Collin_filtered_data <- try(lulcc.filtersel(
+    # transition_result = Trans_data[["trans_result"]],
+    # cov_data = Trans_data[["cov_data"]],
+    # categories =  Predictor_table$CA_category[which(Predictor_table$Covariate_ID %in% names(Trans_data[["cov_data"]]))],
+    # collin_weight_vector = Trans_data[["collin_weights"]],
+    # embedded_weight_vector = Trans_data[["embed_weights"]],
+    # focals= c("Neighbourhood"),
+    # method="GLM",
+    # corcut=0.7))
+
     #save the result
     Dataset_name <- str_remove(basename(z), ".rds")
     Save_dir <- paste0(collinearity_folder_path, "/", Data_period)
     dir.create(Save_dir, recursive = TRUE)
     Save_path_collinearity <- paste0(Save_dir, "/", Dataset_name, "_collin_filtered.rds")
-    saveRDS(Collin_filtered_data, Save_path_collinearity)
-    
+    #saveRDS(Collin_filtered_data, Save_path_collinearity)
+
     gc()
     return(Save_path_collinearity)
 }) #close loop over transition datasets
-plan(sequential)
+#plan(sequential)
 
 cat(paste0(' Collinearity based covariate selection complete \n'))
 
@@ -115,31 +115,35 @@ cat(paste0(' Collinearity based covariate selection complete \n'))
 ### C- Stage 2: GRRF Embedded feature selection
 ### =========================================================================
 
-  future::plan(multisession(workers = availableCores()-2))
+  #future::plan(multisession(workers = availableCores()-2))
   GRRF_selection_results <- future_lapply(collin_selection_results, function(x) {
     
-  gc()  
-  #load dataset
-  collin_filtered_data <- readRDS(x)
-  
-  GRRF_filtered_data <- try(lulcc.grrffeatselect(
-  transition_result = collin_filtered_data$transition_result,
-                     cov_data = collin_filtered_data$covdata_collinearity_filtered,
-                     weight_vector = collin_filtered_data$embedded_weight_vector,
-                      gamma = 0.5), TRUE)
+  # gc()  
+  # #load dataset
+  # collin_filtered_data <- readRDS(x)
+  # 
+  # GRRF_filtered_data <- try(lulcc.grrffeatselect(
+  # transition_result = collin_filtered_data$transition_result,
+  #                    cov_data = collin_filtered_data$covdata_collinearity_filtered,
+  #                    weight_vector = collin_filtered_data$embedded_weight_vector,
+  #                     gamma = 0.5), TRUE)
   
   #save the result
   Dataset_name <- str_remove(basename(x), ".rds")
   Save_dir <- paste0(grrf_folder_path, "/", Data_period)
   dir.create(Save_dir, recursive = TRUE)
   Save_path_grrf <- paste0(Save_dir, "/", str_replace(Dataset_name, "_collin_filtered", "_GRRF_filtered.rds"))
-  saveRDS(GRRF_filtered_data, Save_path_grrf)
+  #saveRDS(GRRF_filtered_data, Save_path_grrf)
   
   gc()
   return(Save_path_grrf)
   })
   plan(sequential)
 cat(paste0(' GRRF embedded covariate selection done \n'))
+
+browser()
+
+test <- readRDS(GRRF_selection_results[[1]])[["var"]]
 
 ### =========================================================================
 ### D- Summarize results of predictor selection procedures
@@ -148,6 +152,8 @@ cat(paste0(' GRRF embedded covariate selection done \n'))
 #loop over the lists of results extracting names of remaining predictors
 Filtered_predictors <- lapply(1:length(collin_selection_results),function(i){
 
+  
+  
   #load each dataset and extract predictor names
   output <- list(collinearity_preds = colnames(readRDS(collin_selection_results[[i]])[["covdata_collinearity_filtered"]]),
                  GRRF_preds = try(readRDS(GRRF_selection_results[[i]])[["var"]]))
@@ -250,14 +256,11 @@ names(Filtered_predictors) <- names(collin_selection_results)
 # cat(paste0(' Results of covariate selection summarized \n'))
 
 ### =========================================================================
-### E- Subsetting datasets with results of predictor filtering
+### E- Subsetting datasets with results of collinearity predictor filtering
 ### =========================================================================
 
-Filtered_predictors <- lapply(GRRF_results, function(x) {
-  output <- list(collinearity_preds = "test",
-                 GRRF_preds = readRDS(x)[["var"]])
-})
-
+# NOTE FOR THIS PROJECT i AM ONLY USING THE COLLINEARITY BASED FEATURE SELECTION
+# AS THE GRRF FEATURE SELECTION IS TOO RESTRICTIVE FOR SOME TRANSITIONS
 
 #Loop over the pre-filtering dataset paths subsetting
 #the data by the filtering results and at the same time identifying 
@@ -271,7 +274,7 @@ future_lapply(1:length(Data_paths),function(i){
   #subset the cov_data component by the names of the
   #remaining predictors following GRRF
   
-  Pred_names <- Filtered_predictors[[i]][["GRRF_preds"]]
+  Pred_names <- Filtered_predictors[[i]][["collinearity_preds"]]
   Pre_PS_dat[["cov_data"]] <- as.data.frame(Pre_PS_dat[["cov_data"]][,Pred_names])
   colnames(Pre_PS_dat[["cov_data"]]) <- Pred_names
   Post_PS_dat <- Pre_PS_dat
@@ -293,7 +296,7 @@ cat(paste0(' Transitions datasets subsetted to filtered covariates \n'))
 
 #Identify focal variables
 Focal_preds_remaining <- unique(unlist(sapply(Filtered_predictors, function(x){
-  Focals <- grep("nhood",x[["GRRF_preds"]] , value = TRUE)
+  Focals <- grep("nhood",x[["collinearity_preds"]] , value = TRUE)
 })))
 
 #load focal layer look up table
@@ -314,7 +317,7 @@ cat(paste0(' Focal layers identified for updating during simulation \n'))
 return(Filtered_predictors)
 } #close wrapper function
 
-Filtering_overview <- lapply(Datasets_for_PS[2], function(x) lulcc.featureselection(Dataset_details = x))
+Filtering_overview <- lapply(Datasets_for_PS, function(x) lulcc.featureselection(Dataset_details = x))
 
 cat(paste0(' Covariate selection complete \n'))
 
