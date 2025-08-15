@@ -16,21 +16,24 @@ if(!dir.exists(base_dir)){
 }
 
 #define colour palette as list using LULC_rat$lulc_name as names
-LULC_pal <- list("Urban/amenities" = '#a8aba5', #Urban
-            "Static" = "#d1d3cf", #static
-            "Open Forest" = "#97d1d5", #Open forest
-            "Closed forest" = "#29898f", #closed forest
-            "Overgrown/shrubland" = "#bb8a75", #Shrubland
-            "Intensive agriculture" =  "#f59f78", #Intensive agriculture
-            "Alpine pastures" = "#6ca147", #Alpine pastures
-            "Grassland or meadows" = "#c4e0a1", #Grassland
-            "Permanent crops" = "#DDCC66", #Permanet crops
-            "Glacier" = "#d5f1ff",
-            "River" = "#93d0ee",
-            "Lake" = "#93d0ee")
+# LULC_pal <- list("Urban/amenities" = '#a8aba5', #Urban
+#             "Static" = "#d1d3cf", #static
+#             "Open Forest" = "#97d1d5", #Open forest
+#             "Closed forest" = "#29898f", #closed forest
+#             "Overgrown/shrubland" = "#bb8a75", #Shrubland
+#             "Intensive agriculture" =  "#f59f78", #Intensive agriculture
+#             "Alpine pastures" = "#6ca147", #Alpine pastures
+#             "Grassland or meadows" = "#c4e0a1", #Grassland
+#             "Permanent crops" = "#DDCC66", #Permanet crops
+#             "Glacier" = "#d5f1ff",
+#             "River" = "#93d0ee",
+#             "Lake" = "#93d0ee")
+
+# load the colour palette from the JSON file
+LULC_pal <- fromJSON("E:/NCCS-SSP-results/LULC_pal.json")
 
 prepare_lulc_files <- function(
-    lulcc_input_dir = "X:/CH_ValPar.CH/03_workspaces/07_Modeling/LULCC-NCCS/lulcc_output",
+    lulcc_input_dir = "E:/NCCS-SSP-results/lulcc_output",
     image_dir = "map_images",
     raster_dir = "raster_data",
     chart_data_dir = "tabular_data",
@@ -171,16 +174,20 @@ prepare_lulc_files <- function(
   
   #add colours to class info
   subset_agg$colours <- sapply(subset_agg$Aggregated_class_short, function(x){
-    colour <- colour_pal[[paste(x)]]
+    colour <- colour_pal$colour[colour_pal$class_name == paste(x)]
   })
   
   LULC_rat$colour <- sapply(LULC_rat$lulc_name, function(x){
-    colour <- colour_pal[[paste(x)]]
+    colour <- colour_pal$colour[colour_pal$class_name == paste(x)]
   })
   
-  # Create a named vector for color mapping
-  col_map <- setNames(LULC_rat$colour, LULC_rat$ID)
+  # Create a named vector for color mapping based on ID for the PNGs
+  png_map <- setNames(LULC_rat$colour, LULC_rat$ID)
   
+  # Create a named vector for color mapping based on lulc_name for the raster attribute table
+  plot_map <- setNames(LULC_rat$colour, LULC_rat$lulc_name)
+  
+
   #Load in most recent non-aggregated LULC raster
   ref_LULC <- rast(Non_agg_lulc_path)
   
@@ -345,7 +352,7 @@ prepare_lulc_files <- function(
               save_indexed_png(
                 raster_obj = masked_lulc, 
                 output_path = map_path_png, 
-                color_palette = col_map,
+                color_palette = png_map,
                 width = 25, 
                 height = 20, 
                 resolution = 300,
@@ -403,7 +410,7 @@ prepare_lulc_files <- function(
             geom_bar(stat = "identity") +
             # add a label of the percentage area on top of each bar
             geom_text(aes(label = paste0(round(perc_area, 2), "%")), vjust = -0.5) +
-            scale_fill_manual(values = LULC_pal) +
+            scale_fill_manual(values = plot_map) +
             labs(title = paste("LULC % areas for", Scenario, "at time step", scenario_lulc_df$Time_step[i]),
                  x = "LULC Class",
                  y = "% area of class coverage",
@@ -427,7 +434,7 @@ prepare_lulc_files <- function(
           save_indexed_png(
             raster_obj = lulc_layer, 
             output_path = scenario_lulc_df$lulc_path_png[i], 
-            color_palette = col_map,
+            color_palette = png_map,
             width = 25, 
             height = 20, 
             resolution = 300,
@@ -494,7 +501,7 @@ prepare_lulc_files <- function(
       # create a bar chart of the area change
       area_change_plot <- ggplot(area_change, aes(x = class_name, y = perc_area_change, fill = class_name)) +
         geom_bar(stat = "identity") +
-        scale_fill_manual(values = LULC_pal) +
+        scale_fill_manual(values = plot_map) +
         geom_text(aes(label = paste0(round(perc_area_change, 2), "%")), vjust = -0.5) +
         labs(title = paste("LULC % Area Change for", Scenario, 
                            "from", first_time_step, "to", last_time_step),
@@ -519,7 +526,7 @@ prepare_lulc_files <- function(
 
 # test function
 prepare_lulc_files(
-    lulcc_input_dir = "X:/CH_ValPar.CH/03_workspaces/07_Modeling/LULCC-NCCS/lulcc_output",
+    lulcc_input_dir = "E:/NCCS-SSP-results/lulcc_output",
     image_dir = "map_images",
     raster_dir = "raster_data",
     chart_data_dir = "tabular_data",
