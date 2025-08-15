@@ -1,0 +1,16 @@
+type;group;value
+Dynamic predictors;Climate;rcp26
+Dynamic predictors;Climate;rcp45
+Dynamic predictors;Climate;rcp85
+Dynamic predictors;Population;Low
+Dynamic predictors;Population;Ref
+Dynamic predictors;Population;High
+Dynamic predictors;Economic;Ref_Central
+Dynamic predictors;Economic;Ecolo_Urban
+Dynamic predictors;Economic;Ecolo_Central
+Dynamic predictors;Economic;Combined_Urban
+Dynamic predictors;Economic;Ref_Peri_urban
+LULC demand;LULC demand;EINAT
+LULC demand;LULC demand;EICUL
+LULC demand;LULC demand;EISOC
+LULC demand;LULC demand;GREX
