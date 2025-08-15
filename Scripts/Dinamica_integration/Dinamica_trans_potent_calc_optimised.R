@@ -10,10 +10,10 @@
 ### =========================================================================
 
 #values for testing purposes
-# wpath <- getwd()
-# Simulation_time_step <- 2080
-# Simulation_num <- "5"
-# File_path_simulated_LULC_maps <- "lulcc_output/SSP5/simulated_LULC_simID_SSP5_year_"
+wpath <- getwd()
+Simulation_time_step <- 2020
+Simulation_num <- "2"
+File_path_simulated_LULC_maps <- "lulcc_output/SSP1/simulated_LULC_simID_SSP1_year_"
 ProjCH <- "+proj=somerc +init=epsg:2056"
 
 #set working directory
@@ -70,6 +70,9 @@ Use_parallel <- Simulation_table$Parallel_TPC.string
 
 #implement spatial interventions
 Use_interventions <- Simulation_table$Spatial_interventions.string
+
+#check normalisation of transition probabilities
+Check_normalisation <- FALSE
 
 cat(paste0("Starting transition potential calculation for ", Model_mode, ": ",
            Simulation_ID, ", with scenario: ", Scenario_ID,
@@ -423,10 +426,6 @@ if (grepl("calibration", Model_mode, ignore.case = TRUE)) {
 }
 
 
-# clean up
-rm(SA_pred_stack, pop_raster, Nhood_rasters, Region_rast)
-gc()
-
 ### =========================================================================
 ### G- Run transition potential prediction for each transition
 ### =========================================================================
@@ -476,6 +475,11 @@ for (i in Final_LULC_classes) {
 
 cat(" - Created dataframe for storing prediction probabilities \n")
 
+prediction_probs_new <- Prediction_probs
+
+
+### OLD method
+Old_start <- Sys.time()
 for (i in 1:nrow(Model_lookup)) {
 
   #vector details of transition
@@ -514,7 +518,44 @@ for (i in 1:nrow(Model_lookup)) {
   #append the predictions at the correct rows in the results df
   Prediction_probs[row.names(prob_predicts), paste0("Prob_", Final_LULC_class)] <- prob_predicts[paste0("Prob_", Final_LULC_class)]
 
-  }
+}
+Old_end <- Sys.time()
+Old_time <- Old_end - Old_start # sequential time = 2.937131 mins
+
+
+### NEW method
+ # G2 Actual transition potential computation ####
+
+
+
+  New_start <- Sys.time()
+  trans_dataset_complete <- as.data.frame(Trans_data_stack)
+  purrr::pmap(
+    dplyr::select(Model_lookup, Trans_ID, Region, Final_LULC, Initial_LULC, File_path),
+    function(tdc = trans_dataset_complete,
+             Trans_ID, Region, Final_LULC, Initial_LULC, File_path) {
+      fitted_model <- readRDS(File_path)
+      pred_data <- tdc[
+        tdc[[Initial_LULC]] == 1 &
+          tdc[["Bioregion"]] == Region,
+      ]
+      prob_predicts <- as.data.frame(predict(fitted_model, pred_data, type = "prob"))
+      names(prob_predicts)[[2]] <- paste0("prob_", Final_LULC)
+    }
+  )
+  # loop over transitions
+  for (i in seq_len(nrow(Model_lookup))) {
+    # alternative method of replacing prob prediction values
+    prediction_probs_new[
+      row.names(prob_predicts),
+      paste0("prob_", Final_LULC)
+    ] <- prob_predicts[paste0("prob_", Final_LULC)]
+  } # close loop over Models
+  New_end <- Sys.time()
+  New_time <- New_end - New_start # sequential time = 2.937131 mins
+  message(" - completed transition potential prediction in ", Non_par_time)
+
+
 
 cat(" - Completed transition potential prediction \n")
 
@@ -572,145 +613,104 @@ rm(Prediction_probs, NA_cells, Trans_data_stack)
 ### H- Scenario specific trends spatially manipulating transition probabilities
 ### =========================================================================
 
-#If statement to implement spatial interventions
-if (Use_interventions == "Y") {
-  
-  cat("Implementing spatial interventions \n")
-  
-  #Use function to perform manipulation of spatial transition probabilities
-  #according to scenario-specific interventions
-  Raster_prob_values <- implement_spatial_interventions(
-    interventions_dir = "Tools",
-    scenario_ID = Scenario_ID,
-    raster_prob_values = Raster_prob_values,
-    simulation_time_step = paste(Simulation_time_step),
-    LULC_rat = LULC_rat,
-    Proj = ProjCH
-  )
-}
-    
+if (grepl("simulation", Model_mode, ignore.case = TRUE)) {
+
+  #If statement to implement spatial interventions
+  if (Use_interventions == "Y") {
+
+    cat("Implementing spatial interventions \n")
+
+    #Use function to perform manipulation of spatial transition probabilities
+    #according to scenario-specific interventions
+    Raster_prob_values <- implement_spatial_interventions(
+      interventions_dir = "Tools",
+      scenario_ID = "SSP5",
+      raster_prob_values = Raster_prob_values,
+      simulation_time_step = paste(Simulation_time_step),
+      LULC_rat = LULC_rat,
+      Proj = ProjCH
+      )
+
+
+    ### =========================================================================
+    ### I- Rescale following scenario trends/interventions
+    ### =========================================================================
+
+    cat("Performing re-scaling following scenario interventions \n")
+
+    #vector row indices with non-zero sums of transition probabilities
+    Non_zero_indices <- which(rowSums(Raster_prob_values[, Pred_prob_columns]) > 1)
+
+    #Loop over rows performing re-scaling
+    Raster_prob_values[Non_zero_indices, Pred_prob_columns] <- as.data.frame(t(apply(Raster_prob_values[Non_zero_indices, Pred_prob_columns], MARGIN = 1, FUN = function(x) {
+      sapply(x, function(y) {
+        value <- y * 1 / sum(x)
+        value[is.na(value)] <- 0 #dividing by Zero introduces NA's so these must be converted back to zero
+        return(value)
+      })
+    })))
+
+  } #close if statement for spatial interventions
+} #close simulation if statement
+
 ### =========================================================================
-### I- Rescale following scenario trends/interventions
+### L- Save transition rasters
 ### =========================================================================
 
-cat("Performing re-scaling following scenario interventions \n")
+cat("Saving transition rasters \n")
 
 #subset model_lookup table to unique trans ID
 Unique_trans <- Model_lookup[!duplicated(Model_lookup$Trans_ID),]
 
-# ---- parameters ----
-tolerance <- 1e-12              # for double-precision checks
-float32_eps <- 1.2e-7           # ~ machine epsilon near 1 for 32-bit float
-compress_opts <- c("COMPRESS=LZW")
+#Loop over unique trans using details to subset data and save Rasters
+for (i in 1:nrow(Unique_trans)) {
 
-# Map class abbreviation -> Aggregated_ID (ensure 1:1)
-class_to_id <- setNames(LULC_rat$Aggregated_ID, LULC_rat$Class_abbreviation)
 
-# Helper: safe column name for a final class
-prob_col_of <- function(final_class) paste0("Prob_", final_class)
+  Trans_ID <- Unique_trans[i, "Trans_ID"]
+  cat(paste0(" - Preparing layer ", Trans_ID, "\n"))
+  Final_LULC_class <- Unique_trans[i, "Final_LULC"]
+  Initial_LULC_class <- Unique_trans[i, "Initial_LULC"]
+  Initial_LULC_ID <- unlist(LULC_rat[LULC_rat$Class_abbreviation == Initial_LULC_class, "Aggregated_ID"])
 
-# Pre-check: all needed prob columns exist?
-needed_prob_cols <- unique(prob_col_of(Unique_trans$Final_LULC))
-missing_cols <- setdiff(needed_prob_cols, names(Raster_prob_values))
-if (length(missing_cols)) stop("Missing probability columns: ", paste(missing_cols, collapse = ", "))
+  #get indices of non_class cells
+  non_initial_indices <- na.omit(Raster_prob_values[Raster_prob_values$LULC != Initial_LULC_ID, "cell"])
 
-# We'll loop by Initial_LULC, build a matrix of the transitions from that initial,
-# mask outside the initial class, rescale rows, nudge a tiny margin, then write.
-initial_levels <- unique(Unique_trans$Initial_LULC)
+  #seperate Final class column
+  Trans_raster_values <- Raster_prob_values[, c("cell", "x", "y", paste0("Prob_", Final_LULC_class))]
 
-for (initial_class in initial_levels) {
-  initial_id <- class_to_id[[initial_class]]
-  if (is.null(initial_id) || length(initial_id) != 1 || is.na(initial_id)) {
-    stop("No unique Aggregated_ID for Initial_LULC = ", initial_class)
-  }
+  #replace values of non-class cells with 0
+  Trans_raster_values[non_initial_indices, paste0("Prob_", Final_LULC_class)] <- 0
 
-  sel <- Unique_trans$Initial_LULC == initial_class
-  finals <- Unique_trans$Final_LULC[sel]
-  trans_ids <- Unique_trans$Trans_ID[sel]
-  cols <- prob_col_of(finals)
-
-  # Build matrix (Ncells x Ntransitions) for this initial class group
-  mat <- as.matrix(Raster_prob_values[, cols, drop = FALSE])
-
-  # Clean inputs
-  mat[is.na(mat)] <- 0
-  mat[mat > 1] <- 1
-
-  # Mask: set to 0 where cell's LULC != initial_id (treat NA as "not the initial")
-  not_initial <- is.na(Raster_prob_values$LULC) | (Raster_prob_values$LULC != initial_id)
-  if (any(not_initial)) mat[not_initial, ] <- 0
-
-  # Row-wise sums and scaling (only rows that exceed 1)
-  rs <- rowSums(mat)
-  needs <- rs > (1 + tolerance)
-  if (any(needs)) {
-    mat[needs, ] <- mat[needs, ] / rs[needs]
-  }
-
-  # Eliminate any tiny drift above 1 and add a small safety margin
-  # so that after writing/reading in float32 and summing, it still won't exceed 1.
-  if (ncol(mat) > 0) {
-    rs2 <- rowSums(mat)
-    # First, correct positive excess exactly
-    excess <- pmax(rs2 - 1, 0)
-    if (any(excess > 0)) {
-      idx_max <- max.col(mat, ties.method = "first")
-      rows_fix <- which(excess > 0)
-      mat[cbind(rows_fix, idx_max[rows_fix])] <-
-        pmax(mat[cbind(rows_fix, idx_max[rows_fix])] - excess[rows_fix], 0)
-    }
-
-    # Then, apply a float32 safety margin on the largest component per row
-    # (covers rounding + summing of up to length(cols) rasters)
-    margin <- max(5e-7, length(cols) * float32_eps)  # conservative
-    positive_rows <- which(rowSums(mat) > 0)
-    if (length(positive_rows)) {
-      idx_max <- max.col(mat, ties.method = "first")
-      mat[cbind(positive_rows, idx_max[positive_rows])] <-
-        pmax(mat[cbind(positive_rows, idx_max[positive_rows])] - margin, 0)
-    }
-
-    # Final clamp to [0, 1) for aesthetics; guarantees strict < 1
-    mat[mat >= 1] <- 1 - 1e-12
-    mat[mat < 0]  <- 0
-
-    # Sanity check before writing
-    rs_final <- rowSums(mat)
-    if (any(rs_final > 1 + tolerance)) {
-      stop("Row-sum > 1 persists after corrections for initial class ", initial_class)
+  if (Check_normalisation) {
+    #check that are Prob_ values are in [0, 1[ - otherwise warn
+    for (col_name in paste0("Prob_", Final_LULC_class)) {
+      col <- Trans_raster_values[, col_name]
+      breaking <- FALSE
+      if (any(col[is.finite(col)] < 0 | col[is.finite(col)] >= 1)) {
+        # Raise warning for values outside [0, 1)
+        warning("Raster warning: Probabilities (excluding NAs) are not in [0, 1[.")
+        breaking <- TRUE
+      } else if (any(is.na(col))) {
+        # Raise warning for NAs
+        warning("Raster warning: Probabilities contain NA values.")
+        breaking <- TRUE
+      }
+      if (breaking) {
+        break  # Stop checking further columns
+      }
     }
   }
 
-  # ---- write rasters for this initial class group ----
-  for (j in seq_along(cols)) {
-    final_class <- finals[j]
-    Trans_ID <- trans_ids[j]
+  #rasterize and save using Initial and Final class names
+  Prob_raster <- rasterFromXYZ(
+    Trans_raster_values[, c("x", "y", paste0("Prob_", Final_LULC_class))], crs = crs(LULC_rast)
+  )
 
-    # xyz for rasterFromXYZ
-    out_df <- data.frame(
-      x = Raster_prob_values$x,
-      y = Raster_prob_values$y,
-      value = mat[, j]
-    )
+  #vector file path for saving probability maps
+  prob_map_path <- paste0(prob_map_folder, "/", Trans_ID, "_probability_", Initial_LULC_class, "_to_", Final_LULC_class, ".tif")
 
-    Prob_raster <- rasterFromXYZ(out_df, crs = crs(LULC_rast))
-
-    out_path <- file.path(
-      prob_map_folder,
-      paste0(Trans_ID, "_probability_", initial_class, "_to_", final_class, ".tif")
-    )
-
-    cat(paste0(" - Writing transition probability raster: ", out_path, "\n"))
-    raster::writeRaster(
-      Prob_raster,
-      out_path,
-      overwrite = TRUE,
-      datatype = "FLT4S",         # write as 32-bit float explicitly
-      options  = compress_opts
-    )
-  }
-
-}
+  raster::writeRaster(Prob_raster, prob_map_path, overwrite = T)
+} #close loop over transitions
 
 ### =========================================================================
 ### M- Return output to Dinamica

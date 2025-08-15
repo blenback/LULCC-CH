@@ -6,10 +6,13 @@
 #############################################################################
 
 
-#load control table 
+#load control table
 Control_table <- read.csv(Control_table_path)
 
 #subset to non-completed simulations
 Control_table <- Control_table[Control_table$Completed.string == "N",]
+
+# reverse the order of the control table
+#Control_table <- Control_table[rev(seq_len(nrow(Control_table))),]
 
 

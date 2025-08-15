@@ -264,6 +264,7 @@
   Transition_target_classes: Int_AG
   Prob_adjust_type: Absolute
   Prob_adjust_value: 100
+  Prob_adjust_zone: Inside
   Mask_type: Static
   From_lulc_filter: Urban
   Intervention_mask: Data/Spat_prob_perturb_layers/Land_marginality/Marginality_raster_urban_centers_masked.tif

@@ -167,18 +167,6 @@ Viable_transitions <- readRDS("Tools/Viable_transitions_lists.rds")
 # subset to the last entry in the list
 Viable_transitions <- Viable_transitions[[length(Viable_transitions)]]
 
-# # sort by ascending value of From. and To.
-# Viable_transitions <- Viable_transitions[order(Viable_transitions$'From.', Viable_transitions$'To.'), ]
-# 
-# # now replace the Trans_ID columns with a new sequence starting from 01
-# Viable_transitions$Trans_ID <- sprintf("%02d", seq_len(nrow(Viable_transitions)))
-# 
-# # overwrite Viable_transitions with the new table
-# Viable_transitions_update <- Viable_transitions
-# Viable_transitions[[length(Viable_transitions)]] <- Viable_transitions_update
-# 
-# saveRDS(Viable_transitions, file = "Tools/Viable_transitions_lists.rds")
-
 
 # replace the LULC classes with the Class IDs
 Future_trans_rates$'From*' <- sapply(Future_trans_rates$LULC_from, function(x) {
